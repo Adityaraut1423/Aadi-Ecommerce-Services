@@ -590,11 +590,11 @@
                 <button type="button" aria-label="Submit Search">🔍</button>
             </div>
             <ul>
-                <li><a href="#">Home</a></li>
+                <li><a href="index.html">Home</a></li>
                 <li><a href="products.html">Products</a></li>
                 <li><a href="cart.html">Cart</a></li>
                 <li><a href="orders.html">My Orders</a></li>
-                <li><a href="login.html">Login</a></li>
+                <li id="authLink"><a href="login.html">Login</a></li>
             </ul>
         </nav>
     </header>
@@ -603,7 +603,7 @@
         <section class="hero">
             <h1>Welcome To Aadi Store</h1>
             <p>Best Deals • Best Products • Best Prices</p>
-            <button type="button">Shop Now</button>
+            <button type="button" onclick="window.location.href='products.html'">Shop Now</button>
         </section>
 
         <section aria-labelledby="cat-title">
@@ -641,7 +641,7 @@
             <p style="font-size:22px; margin:20px 0;">
                 Get up to <strong>70% OFF</strong> on Electronics, Fashion & Accessories
             </p>
-            <button type="button" style="padding:15px 35px; border:none; border-radius:30px; background:#16a34a; color:white; font-size:18px; cursor:pointer;">
+            <button type="button" onclick="window.location.href='products.html'" style="padding:15px 35px; border:none; border-radius:30px; background:#16a34a; color:white; font-size:18px; cursor:pointer;">
                 Shop Now
             </button>
         </section>
@@ -813,11 +813,11 @@
             <div class="footer-box">
                 <h3>Quick Links</h3>
                 <ul>
-                    <li><a href="#">Home</a></li>
-                    <li><a href="#">Products</a></li>
-                    <li><a href="#">Categories</a></li>
-                    <li><a href="#">Offers</a></li>
-                    <li><a href="#">Contact</a></li>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="products.html">Products</a></li>
+                    <li><a href="cart.html">Cart</a></li>
+                    <li><a href="orders.html">My Orders</a></li>
+                    <li><a href="login.html">Contact</a></li>
                 </ul>
             </div>
 
@@ -826,7 +826,7 @@
                 <h3>Customer Support</h3>
                 <ul>
                     <li><a href="#">Help Center</a></li>
-                    <li><a href="#">Track Order</a></li>
+                    <li><a href="orders.html">Track Order</a></li>
                     <li><a href="#">Returns</a></li>
                     <li><a href="#">Privacy Policy</a></li>
                     <li><a href="#">Terms & Conditions</a></li>
@@ -855,20 +855,55 @@
 
     <!-- INTERACTION LOGIC ARCHITECTURE -->
     <script>
+    // Configuration object pointing to the live Render backend
+    const AppServiceConfig = {
+        endpoints: {
+            fetchProducts: 'https://aadi-ecommerce-services-1.onrender.com/api/products',
+            appendCart: 'https://aadi-ecommerce-services-1.onrender.com/api/cart/add'
+        },
+        localFormattingSignature: 'en-IN',
+        currencyISOCode: 'INR'
+    };
+
     // Setup Indian Rupee Currency Formatter
-    const currencyFormatter = new Intl.NumberFormat('en-IN', {
+    const currencyFormatter = new Intl.NumberFormat(AppServiceConfig.localFormattingSignature, {
         style: 'currency',
-        currency: 'INR',
+        currency: AppServiceConfig.currencyISOCode,
         maximumFractionDigits: 0
     });
 
-    // Global cart counter for the homepage mockup
-    let cartCount = 0;
+    // 🔒 AUTHENTICATION GUARD: Require login before adding items to cart
+    window.handleHomepageCartClick = async function(productId, productName) {
+        const sessionData = localStorage.getItem('sessionUser');
 
-    // Global function attached to the window so inline HTML onclick handlers can reach it
-    window.handleHomepageCartClick = function(productName) {
-        cartCount++;
-        alert(`🎉 ${productName} added to cart! Total items: ${cartCount}`);
+        if (!sessionData) {
+            alert('🔑 Please login to buy products and add items to your cart!');
+            window.location.href = 'login.html';
+            return;
+        }
+
+        const activeProfileContext = JSON.parse(sessionData);
+
+        try {
+            const response = await fetch(AppServiceConfig.endpoints.appendCart, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: activeProfileContext.id,
+                    productId: productId,
+                    quantity: 1
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error("Server rejected cart synchronization rules.");
+            }
+
+            alert(`🎉 Success! "${productName}" added to your live database cart.`);
+        } catch (error) {
+            console.error("Cart synchronization error:", error);
+            alert(`Failed to add item to cart.`);
+        }
     };
 
     // ==========================================
@@ -876,29 +911,15 @@
     // ==========================================
     function applySmartNavbar() {
         const sessionData = localStorage.getItem('sessionUser');
-        const navList = document.querySelector('nav ul');
+        const authLinkNode = document.getElementById('authLink');
         
-        if (sessionData && navList) {
-            // Parse the stored database profile
+        if (sessionData && authLinkNode) {
             const activeUser = JSON.parse(sessionData);
-            
-            // Find the list item containing the 'Login' link
-            const navItems = navList.querySelectorAll('li');
-            let loginItem = null;
-            navItems.forEach(item => {
-                if (item.textContent.includes('Login')) {
-                    loginItem = item;
-                }
-            });
-
-            // Replace it with a personalized Logout button
-            if (loginItem) {
-                loginItem.innerHTML = `
-                    <a href="#" onclick="executeSystemLogout()" style="background: #ef4444; color: white;">
-                        Logout (${activeUser.name.split(' ')[0]})
-                    </a>
-                `;
-            }
+            authLinkNode.innerHTML = `
+                <a href="#" onclick="executeSystemLogout()" style="background: #ef4444; color: white;">
+                    Logout (${activeUser.name ? activeUser.name.split(' ')[0] : 'User'})
+                </a>
+            `;
         }
     }
 
@@ -907,12 +928,11 @@
         if(confirm("Are you sure you want to end your secure session?")) {
             localStorage.removeItem('sessionUser');
             alert("Session terminated successfully.");
-            window.location.reload(); // Refresh the page to reset the navbar
+            window.location.reload(); 
         }
     };
 
     document.addEventListener('DOMContentLoaded', async () => {
-        // Run the dynamic navbar check immediately
         applySmartNavbar();
 
         // 1. Intercept Contact Form Submissions
@@ -929,24 +949,19 @@
             e.target.reset();
         });
 
-        // 3. Dynamic Product Fetching Pipeline
+        // 3. Dynamic Product Fetching Pipeline from Live Backend
         const productsGridNode = document.querySelector('.products');
         
         if (productsGridNode) {
             try {
-                // Fetch data from the Spring Boot backend
-                const response = await fetch('http://localhost:8080/api/products');
+                const response = await fetch(AppServiceConfig.endpoints.fetchProducts);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP Error: ${response.status}`);
                 }
 
                 const allProducts = await response.json();
-                
-                // Clear the hardcoded HTML products out of the container
                 productsGridNode.innerHTML = '';
-
-                // Grab the first 8 products to feature on the homepage
                 const featuredProducts = allProducts.slice(0, 8);
 
                 if (featuredProducts.length === 0) {
@@ -954,13 +969,11 @@
                     return;
                 }
 
-                // Loop through and build the cards dynamically
                 featuredProducts.forEach((product, index) => {
                     const isAvailable = product.quantity > 0;
                     const fallbackImage = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600';
                     const imageSource = product.imageUrl && product.imageUrl.trim() !== '' ? product.imageUrl : fallbackImage;
                     
-                    // Alternate badge styles just for visual flair on the homepage
                     const badges = ['NEW', 'HOT', 'SALE', '-20%'];
                     const badgeText = isAvailable ? badges[index % badges.length] : 'SOLD OUT';
                     const badgeColor = isAvailable ? 'red' : '#94a3b8';
@@ -969,7 +982,6 @@
                         ? '' 
                         : 'background: #cbd5e1; cursor: not-allowed; box-shadow: none; color: #64748b;';
 
-                    // Inject HTML for each specific product
                     productsGridNode.innerHTML += `
                         <article class="card">
                             <div class="badge" style="background: ${badgeColor};">${badgeText}</div>
@@ -982,7 +994,7 @@
                                 class="add-to-cart-btn" 
                                 type="button" 
                                 style="${buttonStyles}"
-                                onclick="handleHomepageCartClick('${product.name.replace(/'/g, "\\'")}')" 
+                                onclick="handleHomepageCartClick(${product.id}, '${product.name.replace(/'/g, "\\'")}')" 
                                 ${isAvailable ? '' : 'disabled'}>
                                 ${isAvailable ? 'Add To Cart' : 'Out of Stock'}
                             </button>
@@ -992,7 +1004,7 @@
 
             } catch (error) {
                 console.error("Failed to load dynamic featured products:", error);
-                // The fallback logic handles visual failure gracefully.
+                productsGridNode.innerHTML = `<p style="grid-column: 1/-1; text-align:center; color:red;">Unable to connect to live backend services.</p>`;
             }
         }
     });

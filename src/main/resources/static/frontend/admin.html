@@ -260,9 +260,9 @@
                 <h2>System Information</h2>
                 <p style="color: var(--muted-slate); line-height: 1.6;">
                     <strong>API Endpoints Connected:</strong><br>
-                    Products: http://localhost:8080/api/products<br>
-                    Users: http://localhost:8080/api/users<br>
-                    Orders: http://localhost:8080/api/orders<br>
+                    Products: https://aadi-ecommerce-services-1.onrender.com/api/products<br>
+                    Users: https://aadi-ecommerce-services-1.onrender.com/api/users<br>
+                    Orders: https://aadi-ecommerce-services-1.onrender.com/api/orders<br>
                     <br>
                     <em>Note: Advanced store configuration, database backups, and payment gateway webhooks will be available in the upcoming v2.0 release.</em>
                 </p>
@@ -273,10 +273,10 @@
 
     <!-- ADMIN LOGIC CONTROLLER -->
     <script>
-        // 1. SECURITY & INITIALIZATION
-        const API_PRODUCTS_URL = 'http://localhost:8080/api/products';
-        const API_USERS_URL = 'http://localhost:8080/api/users';
-        const API_ORDERS_URL = 'http://localhost:8080/api/orders';
+        // 1. SECURITY & INITIALIZATION (Updated with live Render backend URLs)
+        const API_PRODUCTS_URL = 'https://aadi-ecommerce-services-1.onrender.com/api/products';
+        const API_USERS_URL = 'https://aadi-ecommerce-services-1.onrender.com/api/users';
+        const API_ORDERS_URL = 'https://aadi-ecommerce-services-1.onrender.com/api/orders';
 
         document.addEventListener('DOMContentLoaded', () => {
             const sessionData = localStorage.getItem('sessionUser');
@@ -358,7 +358,7 @@
                 });
             } catch (error) {
                 console.error(error);
-                showToast("Failed to load products. Is Spring Boot running?", true);
+                showToast("Failed to load products. Is backend online?", true);
             }
         }
 
@@ -447,7 +447,6 @@
         }
 
         async function deleteUser(userId) {
-            // Prevent deleting the active session admin
             const currentAdmin = JSON.parse(localStorage.getItem('sessionUser'));
             if (currentAdmin.id === userId) {
                 showToast("Action Denied: You cannot delete your own admin account.", true);
@@ -484,7 +483,6 @@
                 const tbody = document.getElementById('ordersTableBody');
                 tbody.innerHTML = '';
 
-                // Sort newest first
                 orders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
 
                 orders.forEach(o => {

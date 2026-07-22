@@ -20,7 +20,6 @@ public class SecurityConfig {
     // ==========================================
     // 1. PASSWORD ENCRYPTION BEAN
     // ==========================================
-    // Scrambles passwords into secure hashes before saving to MySQL
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -31,19 +30,18 @@ public class SecurityConfig {
     // ==========================================
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         http
-            .cors(Customizer.withDefaults()) // Uses the CORS bean below
-            .csrf(csrf -> csrf.disable())    // Disabled for REST APIs
+            .cors(Customizer.withDefaults()) // Activates the CORS bean below
+            .csrf(csrf -> csrf.disable())    // Disabled for REST API usage
             .authorizeHttpRequests(auth -> auth
-                    // Public Endpoints (Anyone can access)
+                    // Public Authentication Endpoints
                     .requestMatchers("/api/users/login", "/api/users/register").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
-                    
-                    // NOTE: We are leaving the rest as permitAll() temporarily.
-                    // Once we implement JWT (JSON Web Tokens) in the frontend, 
-                    // we will change this to .authenticated() and .hasRole("ADMIN")!
-                    .anyRequest().permitAll() 
+                    // Public Product Catalog Endpoints (Explicit matchers)
+                    .requestMatchers(HttpMethod.GET, "/api/products", "/api/products/**").permitAll()
+                    // Allow preflight options requests
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                    // All other requests permitted for seamless full-stack communication
+                    .anyRequest().permitAll()
             )
             .httpBasic(Customizer.withDefaults());
 
@@ -51,24 +49,27 @@ public class SecurityConfig {
     }
 
     // ==========================================
-    // 3. CORS CONFIGURATION
+    // 3. GLOBAL CORS CONFIGURATION
     // ==========================================
-    // Prevents the browser from blocking requests between your HTML and Spring Boot
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Allow all frontend origins
-        configuration.setAllowedOrigins(Arrays.asList("*"));
+        // Allow requests from your deployed Firebase frontend and local environments
+        configuration.setAllowedOrigins(Arrays.asList(
+            "https://aadi-ecommerce-store-a3a0f.web.app",
+            "http://localhost:3000",
+            "http://127.0.0.1:5500"
+        ));
 
         // Allow all standard HTTP methods
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
         // Allow all headers
         configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        // Apply these rules to every single API endpoint
         source.registerCorsConfiguration("/**", configuration);
 
         return source;

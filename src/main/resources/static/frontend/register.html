@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | Aadi Store</title>
+    <style>
+        :root {
+            --primary-blue: #1e3a8a;
+            --accent-blue: #2563eb;
+            --dark-slate: #0f172a;
+            --gray-cool: #f5f7fb;
+            --danger-red: #ef4444;
+            --radius-md: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background: var(--gray-cool); display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .register-card { background: white; padding: 40px; border-radius: var(--radius-md); box-shadow: 0 10px 25px rgba(0,0,0,0.08); width: 100%; max-width: 420px; }
+        .register-card h2 { font-size: 24px; color: var(--dark-slate); margin-bottom: 8px; }
+        .register-card p { font-size: 14px; color: #64748b; margin-bottom: 24px; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--dark-slate); margin-bottom: 6px; }
+        .form-group input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; }
+        .form-group input:focus { border-color: var(--accent-blue); }
+        .btn-submit { width: 100%; padding: 14px; background: var(--accent-blue); color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 10px; }
+        .btn-submit:hover { background: var(--primary-blue); }
+        .error-banner { background: #fee2e2; color: var(--danger-red); padding: 10px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; margin-bottom: 20px; display: none; }
+        .toggle-link { text-align: center; margin-top: 20px; font-size: 14px; }
+        .toggle-link a { color: var(--accent-blue); text-decoration: none; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <div class="register-card">
+        <h2>Create Account</h2>
+        <p>Join Aadi Store to start shopping.</p>
+
+        <div id="errorMessage" class="error-banner">Registration failed. Please try again.</div>
+
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="regName">Full Name</label>
+                <input type="text" id="regName" required placeholder="Dinesh Karthik">
+            </div>
+            <div class="form-group">
+                <label for="regEmail">Email Address</label>
+                <input type="email" id="regEmail" required placeholder="dineshkarthik@gmail.com">
+            </div>
+            <div class="form-group">
+                <label for="regPassword">Password</label>
+                <input type="password" id="regPassword" required placeholder="••••••••">
+            </div>
+            <button type="submit" class="btn-submit" id="submitBtn">Create Account</button>
+        </form>
+
+        <div class="toggle-link">
+            Already have an account? <a href="login.html">Sign in here →</a>
+        </div>
+    </div>
+
+    <script>
+        const BACKEND_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:8080'
+            : 'https://aadi-ecommerce-services-1.onrender.com';
+
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            // 🌟 STOPS DEFAULT HTML FORM GET SUBMISSION
+            e.preventDefault();
+
+            const nameInput = document.getElementById('regName').value.trim();
+            const emailInput = document.getElementById('regEmail').value.trim();
+            const passwordInput = document.getElementById('regPassword').value.trim();
+            const errorBanner = document.getElementById('errorMessage');
+            const submitBtn = document.getElementById('submitBtn');
+
+            errorBanner.style.display = 'none';
+            submitBtn.textContent = 'Creating Account...';
+            submitBtn.disabled = true;
+
+            try {
+                // 🌟 EXPLICIT POST FETCH CALL
+                const response = await fetch(`${BACKEND_BASE}/api/users/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: nameInput,
+                        email: emailInput,
+                        password: passwordInput,
+                        role: 'CUSTOMER'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error("Registration failed");
+                }
+
+                alert("Account created successfully! Redirecting to login...");
+                window.location.href = 'login.html';
+
+            } catch (err) {
+                console.error("Registration error:", err);
+                errorBanner.style.display = 'block';
+                errorBanner.textContent = 'Registration failed. Email may already be registered.';
+            } finally {
+                submitBtn.textContent = 'Create Account';
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

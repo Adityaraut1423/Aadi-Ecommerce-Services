@@ -17,12 +17,15 @@ import com.aadiandjava.entity.Product;
 import com.aadiandjava.service.ProductService;
 
 @RestController
-@RequestMapping("/api/products")
-@CrossOrigin(origins = "*") // 👈 CRITICAL: Prevents CORS errors when your HTML pages fetch products
+@RequestMapping("/api/products")  // 👈 THIS IS CRITICAL: Maps all methods in this controller to /api/products
+@CrossOrigin(origins = "*")
 public class ProductController {
 
     @Autowired
     ProductService service;
+
+    @GetMapping("/favicon.ico")
+    public void ignoreFavicon() {}
 
     @PostMapping
     public Product addProduct(@RequestBody Product product) {
@@ -34,17 +37,17 @@ public class ProductController {
         return service.getAll();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     public Product getProduct(@PathVariable Long id) {
         return service.getById(id);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{id:\\d+}")
     public Product updateProduct(@PathVariable Long id, @RequestBody Product product) {
         return service.update(id, product);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:\\d+}")
     public void deleteProduct(@PathVariable Long id) {
         service.delete(id);
     }

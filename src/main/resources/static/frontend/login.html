@@ -3,513 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Access | Aadi Store Premium</title>
-
+    <title>Login | Aadi Store</title>
     <style>
-        /* PREMIUM GLOBAL STYLES */
         :root {
             --primary-blue: #1e3a8a;
             --accent-blue: #2563eb;
-            --sky-blue: #38bdf8;
-            --text-dark: #0f172a;
-            --text-muted: #64748b;
-            --glass-bg: rgba(255, 255, 255, 0.75);
-            --glass-border: rgba(255, 255, 255, 0.6);
-            --glass-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            --dark-slate: #0f172a;
+            --gray-cool: #f5f7fb;
+            --danger-red: #ef4444;
+            --radius-md: 12px;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        body {
-            background-color: #f8fafc;
-            color: var(--text-dark);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            position: relative;
-            overflow-x: hidden;
-        }
-
-        /* ANIMATED BACKGROUND BLOBS FOR 'EXPENSIVE' LOOK */
-        .bg-blobs {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            overflow: hidden;
-            z-index: -1;
-        }
-        .blob {
-            position: absolute;
-            filter: blur(80px);
-            opacity: 0.5;
-            border-radius: 50%;
-            animation: float 10s infinite ease-in-out alternate;
-        }
-        .blob-1 {
-            top: -10%; left: -5%;
-            width: 500px; height: 500px;
-            background: #e0e7ff;
-            animation-delay: 0s;
-        }
-        .blob-2 {
-            bottom: -20%; right: -10%;
-            width: 600px; height: 600px;
-            background: #bae6fd;
-            animation-delay: -5s;
-        }
-        .blob-3 {
-            top: 40%; left: 60%;
-            width: 400px; height: 400px;
-            background: #dbeafe;
-            animation-delay: -2s;
-        }
-
-        @keyframes float {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(30px, -50px) scale(1.1); }
-        }
-
-        /* PREMIUM NAVBAR */
-        nav {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            background: var(--primary-blue);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 60px;
-            height: 80px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-        }
-
-        .logo {
-            color: white;
-            font-size: 26px;
-            font-weight: 800;
-            text-decoration: none;
-            letter-spacing: -0.5px;
-        }
-
-        nav ul {
-            list-style: none;
-            display: flex;
-            align-items: center;
-            height: 100%;
-        }
-
-        nav ul li {
-            height: 100%;
-            display: flex;
-            align-items: center;
-            margin-left: 10px;
-        }
-
-        nav ul li a {
-            text-decoration: none;
-            color: rgba(255,255,255,0.8);
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-weight: 500;
-            font-size: 15px;
-            transition: all 0.3s ease;
-        }
-
-        nav ul li a:hover {
-            color: white;
-            background: rgba(255,255,255,0.08);
-        }
-
-        nav ul li a.active {
-            background: var(--accent-blue);
-            color: white;
-            box-shadow: 0 4px 12px rgba(37,99,235,0.2);
-        }
-
-        /* GLASSMORPHISM AUTH CONTAINER */
-        main {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 40px 20px;
-        }
-
-        .auth-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            width: 100%;
-            max-width: 460px;
-            padding: 50px 45px;
-            border-radius: 24px;
-            box-shadow: var(--glass-shadow);
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* Subtle inner highlight for the glass edge */
-        .auth-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
-        }
-
-        .auth-header {
-            text-align: center;
-            margin-bottom: 35px;
-        }
-
-        .auth-header h1 {
-            font-size: 32px;
-            color: var(--text-dark);
-            font-weight: 800;
-            margin-bottom: 8px;
-            letter-spacing: -0.5px;
-        }
-
-        .auth-header p {
-            color: var(--text-muted);
-            font-size: 15px;
-        }
-
-        /* REFINED FORM LOGIC */
-        .auth-form {
-            display: flex;
-            flex-direction: column;
-            gap: 22px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            position: relative;
-        }
-
-        .form-group label {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--text-dark);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .form-group input {
-            padding: 16px;
-            font-size: 15px;
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            outline: none;
-            color: var(--text-dark);
-            transition: all 0.3s ease;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
-        }
-
-        .form-group input::placeholder {
-            color: #94a3b8;
-        }
-
-        .form-group input:focus {
-            border-color: var(--accent-blue);
-            background: #ffffff;
-            box-shadow: 0 0 0 4px rgba(37,99,235,0.1);
-        }
-
-        /* PREMIUM BUTTON STYLING */
-        .submit-btn {
-            padding: 16px;
-            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--primary-blue) 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 10px;
-            box-shadow: 0 10px 20px -10px var(--primary-blue);
-        }
-
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 25px -10px var(--primary-blue);
-        }
-
-        .submit-btn:active {
-            transform: translateY(0);
-        }
-
-        /* ELEGANT TOGGLE FOOTER */
-        .switch-view-text {
-            text-align: center;
-            margin-top: 30px;
-            font-size: 15px;
-            color: var(--text-muted);
-        }
-
-        .switch-view-text span {
-            color: var(--accent-blue);
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: inline-block;
-        }
-
-        .switch-view-text span:hover {
-            color: var(--primary-blue);
-            transform: translateX(4px);
-        }
-
-        /* VIEW TRANSITION ANIMATIONS */
-        .fade-in {
-            animation: fadeIn 0.4s ease-out forwards;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* RESPONSE MESSAGES */
-        .msg-box {
-            padding: 14px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 600;
-            display: none;
-            margin-bottom: 25px;
-            text-align: center;
-            animation: fadeIn 0.3s ease;
-        }
-        .msg-box.error {
-            background: #fef2f2;
-            color: #ef4444;
-            border: 1px solid #fecaca;
-        }
-        .msg-box.success {
-            background: #f0fdf4;
-            color: #16a34a;
-            border: 1px solid #bbf7d0;
-        }
-
-        /* RESPONSIVE MEDIA QUERIES */
-        @media (max-width: 600px) {
-            nav { padding: 0 20px; }
-            .auth-card { padding: 40px 25px; border-radius: 16px; }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background: var(--gray-cool); display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .login-card { background: white; padding: 40px; border-radius: var(--radius-md); box-shadow: 0 10px 25px rgba(0,0,0,0.08); width: 100%; max-width: 400px; }
+        .login-card h2 { font-size: 24px; color: var(--dark-slate); margin-bottom: 8px; }
+        .login-card p { font-size: 14px; color: #64748b; margin-bottom: 24px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--dark-slate); margin-bottom: 6px; }
+        .form-group input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; }
+        .form-group input:focus { border-color: var(--accent-blue); }
+        .btn-submit { width: 100%; padding: 14px; background: var(--accent-blue); color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-submit:hover { background: var(--primary-blue); }
+        .error-banner { background: #fee2e2; color: var(--danger-red); padding: 10px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; margin-bottom: 20px; display: none; }
+        .toggle-link { text-align: center; margin-top: 20px; font-size: 14px; }
+        .toggle-link a { color: var(--accent-blue); text-decoration: none; font-weight: 600; }
     </style>
 </head>
 <body>
 
-    <!-- Animated Background Effect -->
-    <div class="bg-blobs">
-        <div class="blob blob-1"></div>
-        <div class="blob blob-2"></div>
-        <div class="blob blob-3"></div>
+    <div class="login-card">
+        <h2>Welcome Back</h2>
+        <p>Enter your credentials to access your account.</p>
+
+        <div id="errorMessage" class="error-banner">Invalid email or password.</div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="loginEmail">Email Address</label>
+                <input type="email" id="loginEmail" required placeholder="adityaraut@gmail.com">
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" required placeholder="••••••••">
+            </div>
+            <button type="submit" class="btn-submit" id="submitBtn">Sign In to Account</button>
+        </form>
+
+        <div class="toggle-link">
+            Don't have an account? <a href="register.html">Create one here →</a>
+        </div>
     </div>
 
-    <header>
-        <nav>
-            <a href="index.html" class="logo">Aadi Store</a>
-            <ul>
-                <li><a href="index.html">Home</a></li>
-                <li><a href="products.html">Products</a></li>
-                <li><a href="cart.html">Cart</a></li>
-                <li><a href="login.html" class="active">Login</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <main>
-        <div class="auth-card">
-            <!-- Dynamic Notification Console -->
-            <div id="statusMessage" class="msg-box"></div>
-
-            <!-- VIEW 1: LOGIN BOX SYSTEM -->
-            <div id="loginView" class="fade-in">
-                <div class="auth-header">
-                    <h1>Welcome Back</h1>
-                    <p>Enter your credentials to access your dashboard.</p>
-                </div>
-                <form class="auth-form" id="loginForm">
-                    <div class="form-group">
-                        <label for="loginEmail">Email Address</label>
-                        <input type="email" id="loginEmail" placeholder="name@example.com" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="loginPassword">Password</label>
-                        <input type="password" id="loginPassword" placeholder="••••••••" required>
-                    </div>
-                    <button type="submit" class="submit-btn">Sign In to Account</button>
-                </form>
-                <p class="switch-view-text">Don't have an account? <span onclick="toggleAuthPanes(false)">Create one here &rarr;</span></p>
-            </div>
-
-            <!-- VIEW 2: REGISTRATION BOX SYSTEM (HIDDEN BY DEFAULT) -->
-            <div id="registerView" style="display: none;" class="fade-in">
-                <div class="auth-header">
-                    <h1>Create Account</h1>
-                    <p>Join Aadi Store for exclusive deals and tracking.</p>
-                </div>
-                <form class="auth-form" id="registerForm">
-                    <div class="form-group">
-                        <label for="regName">Full Name</label>
-                        <input type="text" id="regName" placeholder="John Doe" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="regEmail">Email Address</label>
-                        <input type="email" id="regEmail" placeholder="name@example.com" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="regPassword">Password</label>
-                        <input type="password" id="regPassword" placeholder="Minimum 6 characters" minlength="6" required>
-                    </div>
-                    <button type="submit" class="submit-btn">Register Now</button>
-                </form>
-                <p class="switch-view-text">Already have an account? <span onclick="toggleAuthPanes(true)">Sign in instead &rarr;</span></p>
-            </div>
-        </div>
-    </main>
-
-    <!-- ASYNCHRONOUS BACKEND INTEGRATION SCRIPT -->      
     <script>
-        // Redirect if already logged in (Checks for Admin role too!)
-        const existingSession = localStorage.getItem('sessionUser');
-        if (existingSession) {
-            const user = JSON.parse(existingSession);
-            if (user.role === 'ADMIN') {
-                window.location.href = 'admin.html';
-            } else {
-                window.location.href = 'index.html';
-            }
-        }
+        // Dynamic Backend Host Detection
+        const BACKEND_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:8080'
+            : 'https://aadi-ecommerce-services-1.onrender.com';
 
-        // SPRING BOOT BACKEND PORT
-        const API_USER_BASE_URL = 'http://localhost:8080/api/users'; 
-
-        // Interface toggler configuration
-        function toggleAuthPanes(showLogin) {
-            clearNotification();
-            const loginPane = document.getElementById('loginView');
-            const registerPane = document.getElementById('registerView');
-            
-            // Remove animation classes to re-trigger them
-            loginPane.classList.remove('fade-in');
-            registerPane.classList.remove('fade-in');
-
-            if (showLogin) {
-                loginPane.style.display = 'block';
-                registerPane.style.display = 'none';
-                void loginPane.offsetWidth; // Trigger reflow for animation
-                loginPane.classList.add('fade-in');
-            } else {
-                loginPane.style.display = 'none';
-                registerPane.style.display = 'block';
-                void registerPane.offsetWidth; // Trigger reflow for animation
-                registerPane.classList.add('fade-in');
-            }
-        }
-
-        // Notification center handling
-        function displayNotification(message, isError) {
-            const container = document.getElementById('statusMessage');
-            container.textContent = message;
-            container.className = `msg-box ${isError ? 'error' : 'success'}`;
-            container.style.display = 'block';
-        }
-
-        function clearNotification() {
-            document.getElementById('statusMessage').style.display = 'none';
-        }
-
-        // 1. ASYNC FLOW: Login Handler API link (UPDATED FOR SMART ROUTING)
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            // 🌟 CRITICAL FIX: Stops browser from sending an automatic GET page refresh
             e.preventDefault();
-            clearNotification();
 
-            const emailPayload = document.getElementById('loginEmail').value;
-            const passwordPayload = document.getElementById('loginPassword').value;
+            const emailInput = document.getElementById('loginEmail').value.trim();
+            const passwordInput = document.getElementById('loginPassword').value.trim();
+            const errorBanner = document.getElementById('errorMessage');
+            const submitBtn = document.getElementById('submitBtn');
+
+            errorBanner.style.display = 'none';
+            submitBtn.textContent = 'Authenticating...';
+            submitBtn.disabled = true;
 
             try {
-                const response = await fetch(`${API_USER_BASE_URL}/login`, {
+                // 🌟 Explicit POST fetch request to Spring Boot backend
+                const response = await fetch(`${BACKEND_BASE}/api/users/login`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: emailPayload, password: passwordPayload })
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: emailInput,
+                        password: passwordInput
+                    })
                 });
 
-                // Safely read the response as raw text first
-                const rawResponseText = await response.text();
-                let data;
-                
-                // Try to parse it as JSON, but fall back to plain text if it fails
-                try {
-                    data = JSON.parse(rawResponseText);
-                } catch (parseError) {
-                    data = rawResponseText; 
+                if (!response.ok) {
+                    throw new Error("Authentication failed");
                 }
 
-                if (response.ok) {
-                    // If data is an object, use data.name. If it's a string, just say 'User'
-                    const userName = (data && data.name) ? data.name : 'User';
-                    displayNotification(`Welcome back, ${userName}! Redirecting...`, false);
-                    
-                    // Store operational user data fields inside localized web storage
-                    const sessionObject = typeof data === 'string' ? { email: emailPayload, role: 'CUSTOMER' } : data;
-                    localStorage.setItem('sessionUser', JSON.stringify(sessionObject));
-                    
-                    // 🌟 SMART ROUTING: Check the user's role before redirecting
-                    setTimeout(() => { 
-                        if (sessionObject.role === 'ADMIN') {
-                            window.location.href = 'admin.html'; // Admins go to the dashboard
-                        } else {
-                            window.location.href = 'index.html'; // Customers go to the storefront
-                        }
-                    }, 1500);
-                } else {
-                    // Grab failure strings straight from badRequest context response
-                    const errorMessage = data.message || data || "Invalid credentials provided.";
-                    throw new Error(errorMessage);
-                }
+                const userData = await response.json();
+
+                // Store active profile session context locally
+                localStorage.setItem('sessionUser', JSON.stringify(userData));
+
+                // Redirect user to the products catalog page
+                window.location.href = 'products.html';
+
             } catch (err) {
-                displayNotification(err.message === '[object Object]' ? "Authentication rejected. Verify inputs." : err.message, true);
-            }
-        });
-
-        // 2. ASYNC FLOW: Registration Handler API link
-        document.getElementById('registerForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            clearNotification();
-
-            const namePayload = document.getElementById('regName').value;
-            const emailPayload = document.getElementById('regEmail').value;
-            const passwordPayload = document.getElementById('regPassword').value;
-
-            try {
-                const response = await fetch(`${API_USER_BASE_URL}/register`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: namePayload, email: emailPayload, password: passwordPayload })
-                });
-
-                if (response.ok) {
-                    displayNotification("Account registered successfully! Switching to login...", false);
-                    document.getElementById('registerForm').reset();
-                    setTimeout(() => { toggleAuthPanes(true); }, 2000);
-                } else {
-                    const errorText = await response.text();
-                    throw new Error(errorText || "Registration rejected.");
-                }
-            } catch (error) {
-                displayNotification(error.message, true);
+                console.error("Login anomaly caught:", err);
+                errorBanner.style.display = 'block';
+                errorBanner.textContent = 'Invalid email or password.';
+            } finally {
+                submitBtn.textContent = 'Sign In to Account';
+                submitBtn.disabled = false;
             }
         });
     </script>

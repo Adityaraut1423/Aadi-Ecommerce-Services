@@ -9,6 +9,7 @@
             --primary-blue: #1e3a8a;
             --accent-blue: #2563eb;
             --success-green: #16a34a;
+            --danger-red: #ef4444;
             --text-dark: #0f172a;
             --text-muted: #64748b;
             --gray-bg: #f8fafc;
@@ -99,29 +100,46 @@
     </main>
 
     <script>
-        const API_ORDERS_URL = 'http://localhost:8080/api/orders/user';
+        // 🌟 DYNAMIC BACKEND HOST DETECTION (Localhost port 8080 vs Render Production)
+        const BACKEND_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            ? 'http://localhost:8080'
+            : 'https://aadi-ecommerce-services-1.onrender.com';
+
+        const API_ORDERS_URL = `${BACKEND_BASE}/api/orders/user`;
         let currentUser = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             const sessionData = localStorage.getItem('sessionUser');
             if (sessionData) {
-                currentUser = JSON.parse(sessionData);
-                document.getElementById('authLink').innerHTML = `<a href="#" onclick="logout()">Logout</a>`;
-                
-                if(!currentUser.id) {
-                    renderEmptyState("Session invalid. Please log in again.");
-                    return;
+                try {
+                    currentUser = JSON.parse(sessionData);
+                    
+                    const authLink = document.getElementById('authLink');
+                    if (authLink) {
+                        const displayName = currentUser.name ? currentUser.name.split(' ')[0] : 'User';
+                        authLink.innerHTML = `<a href="#" onclick="logout()" style="background:var(--danger-red); color:white; border-radius:6px;">Logout (${displayName})</a>`;
+                    }
+                    
+                    if (!currentUser.id) {
+                        renderEmptyState("Session invalid. Please log in again.");
+                        return;
+                    }
+                    
+                    fetchUserOrders();
+                } catch (e) {
+                    localStorage.removeItem('sessionUser');
+                    renderEmptyState("Session error. Please log in again.");
                 }
-                
-                fetchUserOrders();
             } else {
                 renderEmptyState("You must be logged in to view your order history.");
             }
         });
 
         function logout() {
-            localStorage.removeItem('sessionUser');
-            window.location.href = 'login.html';
+            if (confirm("Are you sure you want to log out?")) {
+                localStorage.removeItem('sessionUser');
+                window.location.href = 'login.html';
+            }
         }
 
         function renderEmptyState(message = "You haven't placed any orders yet.") {
@@ -136,19 +154,19 @@
         async function fetchUserOrders() {
             try {
                 const response = await fetch(`${API_ORDERS_URL}/${currentUser.id}`);
-                if (!response.ok) throw new Error("Failed to fetch orders");
+                if (!response.ok) throw new Error("Failed to fetch orders from backend");
                 
                 const orders = await response.json();
                 
-                if (orders.length === 0) {
+                if (!orders || orders.length === 0) {
                     renderEmptyState();
                     return;
                 }
 
                 renderOrders(orders);
             } catch (error) {
-                console.error(error);
-                renderEmptyState("Error connecting to the server.");
+                console.error("Order history fetch error:", error);
+                renderEmptyState("Error connecting to the server. Please verify your backend server is running.");
             }
         }
 
@@ -156,11 +174,10 @@
             const container = document.getElementById('ordersContainer');
             container.innerHTML = '';
 
-            // Sort orders so the newest ones show at the top
+            // Sort orders so newest purchases appear at the top
             orders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
 
             orders.forEach(order => {
-                // Format the LocalDateTime string into a readable format
                 const dateObj = new Date(order.orderDate);
                 const formattedDate = dateObj.toLocaleDateString('en-IN', {
                     year: 'numeric', month: 'long', day: 'numeric',
@@ -172,7 +189,7 @@
                         <div class="order-info">
                             <h3>Order #${order.id}</h3>
                             <p><strong>Placed on:</strong> ${formattedDate}</p>
-                            <p><strong>Payment Method:</strong> Secure Checkout</p>
+                            <p><strong>Payment Status:</strong> Paid via Safe Checkout</p>
                         </div>
                         <div class="order-amount">
                             <div class="price">₹${order.totalAmount}</div>

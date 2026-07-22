@@ -301,21 +301,17 @@
             border-color: var(--border-light);
         }
 
-        .card-img-wrapper {
-            position: relative;
-            overflow: hidden;
-            background-color: #e2e8f0;
-        }
-
-        .card img {
+        .card-img {
             width: 100%;
-            height: 250px;
+            height: 220px;
             object-fit: cover;
-            transition: transform 0.5s ease;
+            border-bottom: 1px solid var(--border-extra-light);
+            background-color: var(--gray-cool);
+            transition: transform 0.3s ease;
         }
 
-        .card:hover img {
-            transform: scale(1.05);
+        .card:hover .card-img {
+            transform: scale(1.03);
         }
 
         .card-body {
@@ -326,7 +322,7 @@
         }
 
         .card h3 {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 700;
             color: var(--dark-slate);
             margin-bottom: 8px;
@@ -335,13 +331,9 @@
 
         .card p {
             color: var(--text-muted);
-            font-size: 14px;
+            font-size: 13px;
             line-height: 1.6;
             margin-bottom: 20px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
             flex: 1;
         }
 
@@ -356,25 +348,14 @@
 
         .price {
             color: var(--accent-blue);
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 800;
         }
-
-        .stock-tag {
-            font-size: 12px;
-            font-weight: 700;
-            padding: 4px 10px;
-            border-radius: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-        .in-stock { background: #dcfce7; color: var(--success-green); }
-        .out-of-stock { background: var(--danger-light); color: var(--danger-red); }
 
         .add-to-cart-btn {
             width: 100%;
             margin-top: 18px;
-            padding: 14px;
+            padding: 12px;
             border: none;
             border-radius: var(--radius-sm);
             background: var(--success-green);
@@ -390,25 +371,6 @@
             background: var(--success-hover);
             box-shadow: 0 6px 16px rgba(22,163,74,0.2);
         }
-        
-        .add-to-cart-btn:disabled {
-            background: var(--border-light);
-            color: #94a3b8;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-
-        .status-msg {
-            text-align: center;
-            font-size: 18px;
-            color: var(--text-muted);
-            padding: 60px 20px;
-            grid-column: 1 / -1;
-            background: white;
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--border-extra-light);
-        }
 
         /* FOOTER MODULE */
         footer {
@@ -421,7 +383,6 @@
             margin-top: auto;
         }
 
-        /* RESPONSIVE DESIGN MEDIA HOOKS */
         @media (max-width: 992px) {
             main { width: 90%; }
             nav { padding: 0 30px; }
@@ -448,15 +409,15 @@
                 <span class="logo-tag">Catalog</span>
             </div>
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Search product catalogs by name...">
-                <button type="button" onclick="SearchFilterEngine.executeClientSearch()">🔍</button>
+                <input type="text" id="searchInput" placeholder="Search product catalogs by name..." oninput="filterProducts()">
+                <button type="button">🔍</button>
             </div>
             <ul>
                 <li><a href="index.html">Home</a></li>
                 <li><a href="products.html" class="active">Products</a></li>
                 <li><a href="cart.html">Cart</a></li>
                 <li><a href="orders.html">My Orders</a></li>
-                <li><a href="login.html">Login</a></li>
+                <li id="authLink"><a href="login.html">Login</a></li>
             </ul>
         </nav>
     </header>
@@ -471,17 +432,10 @@
         <section class="filter-control-deck" aria-label="Catalog Filters">
             <div class="filter-group">
                 <label for="priceSortSelect">Organize Distribution:</label>
-                <select id="priceSortSelect" onchange="SearchFilterEngine.processCatalogsOrdering()">
+                <select id="priceSortSelect" onchange="sortProducts()">
                     <option value="default">Database Default Ordering</option>
                     <option value="low-high">Price Valuation: Low to High</option>
                     <option value="high-low">Price Valuation: High to Low</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label for="stockFilterSelect">Availability Filter:</label>
-                <select id="stockFilterSelect" onchange="SearchFilterEngine.executeClientSearch()">
-                    <option value="all">Show Complete Inventory Records</option>
-                    <option value="instock">Filter By Active Stock Availability</option>
                 </select>
             </div>
         </section>
@@ -505,210 +459,163 @@
 
     <!-- RUNTIME DATA ROUTER PIPELINE ENGINES -->
     <script>
-        /**
-         * STATIC GLOBAL PROPERTIES SCHEMA DEFINITIONS
-         */
-        const AppServiceConfig = {
-            endpoints: {
-                fetchProducts: 'http://localhost:8080/api/products',
-                appendCart: 'http://localhost:8080/api/cart/add'
-            },
-            fallbackSessionId: 1,
-            localFormattingSignature: 'en-IN',
-            currencyISOCode: 'INR'
-        };
+        // Automatic Backend URL selection (Local vs Production)
+        const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:8080'
+            : 'https://aadi-ecommerce-services-1.onrender.com';
 
-        // Local browser storage tracking extraction operations
-        const loggedUserContext = JSON.parse(localStorage.getItem('sessionUser'));
-        const CURRENT_ACTIVE_USER_ID = loggedUserContext ? loggedUserContext.id : AppServiceConfig.fallbackUserIndex;
+        let allProducts = [];
 
-        // Core memory reference state array register caches
-        let coreCatalogStateRegister = [];
-
-        // Formatting currency display handler pipelines instance
-        const catalogCurrencyFormatter = new Intl.NumberFormat(AppServiceConfig.localFormattingSignature, {
+        // Currency Formatter for Indian Rupee
+        const currencyFormatter = new Intl.NumberFormat('en-IN', {
             style: 'currency',
-            currency: AppServiceConfig.currencyISOCode,
+            currency: 'INR',
             maximumFractionDigits: 0
         });
 
-        /**
-         * NOTIFICATION MANAGER BANNER INTERFACE DECK LOGIC
-         */
-        const CatalogToastSystem = {
-            triggerNotification: function(messageString, variantTypeClass = 'success') {
-                const logsRootConsoleNode = document.getElementById('notificationConsole');
-                const elementWrapper = document.createElement('div');
-                elementWrapper.className = `toast-banner ${variantTypeClass}`;
-                
-                elementWrapper.innerHTML = `
-                    <span style="font-size: 14px; font-weight: 600;">${messageString}</span>
-                    <span style="cursor: pointer; margin-left: 20px; font-size: 12px; opacity: 0.6;" onclick="this.parentElement.remove()">✕</span>
-                `;
-                
-                logsRootConsoleNode.appendChild(elementWrapper);
-                setTimeout(() => { if(elementWrapper) elementWrapper.remove(); }, 3500);
-            }
-        };
-
-        /**
-         * READ TRANSACTIONS PIPELINE INTERFACE SERVICE METHODS
-         */
-        async function fetchProductsFromDatabaseEngine() {
-            const loadingShimmerDeck = document.getElementById('shimmerInstanceGrid');
-            const dataGridContainerNode = document.getElementById('productsContainer');
-
-            try {
-                const operationalNetworkResponse = await fetch(AppServiceConfig.endpoints.fetchProducts);
-                
-                if (!operationalNetworkResponse.ok) {
-                    throw new Error(`Data acquisition fault logic captured: Exception status value ${operationalNetworkResponse.status}`);
-                }
-
-                coreCatalogStateRegister = await operationalNetworkResponse.json();              
-                loadingShimmerDeck.style.display = 'none';
-                dataGridContainerNode.style.display = 'grid';
-                
-                SearchFilterEngine.executeClientSearch();
-            } catch (networkInterfaceErrorAnomalies) {
-                console.error("API Fetch operational routing error:", networkInterfaceErrorAnomalies);
-                loadingShimmerDeck.style.display = 'none';
-                dataGridContainerNode.style.display = 'grid';
-                
-                dataGridContainerNode.innerHTML = `
-                    <div class="status-msg" style="color: var(--danger-red); border-color: var(--danger-red);">
-                        <h3>Relational Catalog API Pipeline Disconnected</h3>
-                        <p style="margin-top: 10px; font-size: 14px; color: var(--text-muted);">Failed to secure data handshake arrays from the local Spring Boot REST endpoint configuration targets at port 8080. Verify that your server execution process engine is actively running and CrossOrigin access annotations parameters are declared.</p>
-                        <button onclick="window.location.reload()" style="margin-top:20px; padding: 10px 24px; border:none; background: var(--dark-slate); color:white; font-weight:700; border-radius:4px; cursor:pointer;">Retry API Pipeline Call</button>
-                    </div>
+        // Dynamic Auth Navbar Display
+        function applySmartNavbar() {
+            const sessionData = localStorage.getItem('sessionUser');
+            const authLinkNode = document.getElementById('authLink');
+            
+            if (sessionData && authLinkNode) {
+                const activeUser = JSON.parse(sessionData);
+                authLinkNode.innerHTML = `
+                    <a href="#" onclick="executeSystemLogout()" style="background: #ef4444; color: white;">
+                        Logout (${activeUser.name ? activeUser.name.split(' ')[0] : 'User'})
+                    </a>
                 `;
             }
         }
 
-        /**
-         * RENDER GRAPHICAL LAYOUT INTERFACE GENERATOR COMPONENT
-         */
-        const InterfaceUIGenerator = {
-            injectCardsToGrid: function(processedDataArrays) {
-                const gridInjectionTargetNode = document.getElementById('productsContainer');
-                gridInjectionTargetNode.innerHTML = '';
-
-                if (!processedDataArrays || processedDataArrays.length === 0) {
-                    gridInjectionTargetNode.innerHTML = `<div class="status-msg">No active product entity records found matching your specified optimization filter requirements.</div>`;
-                    return;
-                }
-
-                processedDataArrays.forEach(entityRow => {
-                    const isAvailable = entityRow.quantity > 0;
-                    
-                    // DYNAMIC DATA MAPPING RESOLVER: Maps graphic links dynamically straight out of your database column entities rows
-                    const trueActiveAssetSource = entityRow.imageUrl && entityRow.imageUrl.trim() !== '' 
-                        ? entityRow.imageUrl 
-                        : 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600';
-
-                    gridInjectionTargetNode.innerHTML += `
-                        <article class="card">
-                            <div class="card-img-wrapper">
-                                <img src="${trueActiveAssetSource}" alt="${entityRow.name}" onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600'">
-                            </div>
-                            <div class="card-body">
-                                <h3>${entityRow.name}</h3>
-                                <p>${entityRow.description || 'No custom descriptive summary attributes stored inside the relational database fields for this specific card selection.'}</p>
-                                <div class="price-row">
-                                    <span class="price">${catalogCurrencyFormatter.format(entityRow.price)}</span>
-                                    <span class="stock-tag ${isAvailable ? 'in-stock' : 'out-of-stock'}">${isAvailable ? 'In Stock' : 'Out of Stock'}</span>
-                                </div>
-                                <button 
-                                    type="button" 
-                                    class="add-to-cart-btn" 
-                                    onclick="TransactionalCartDispatchEngine.dispatchCartPayloadItem(${entityRow.id}, '${entityRow.name.replace(/'/g, "\\'")}')" 
-                                    ${isAvailable ? '' : 'disabled'}>
-                                    ${isAvailable ? 'Add to Shipping Cart' : 'Catalog Sold Out'}
-                                </button>
-                            </div>
-                        </article>
-                    `;
-                });
+        window.executeSystemLogout = function() {
+            if (confirm("Are you sure you want to log out?")) {
+                localStorage.removeItem('sessionUser');
+                window.location.reload();
             }
         };
 
-        /**
-         * SEARCH FILTER FILTERING UTILITIES CONTROLLER ENGINE
-         */
-        const SearchFilterEngine = {
-            executeClientSearch: function() {
-                const searchFieldStringValue = document.getElementById('searchInput').value.toLowerCase().trim();
-                const stockFilterSelectionConstraint = document.getElementById('stockFilterSelect').value;
-
-                let outputProcessingResultsRegister = coreCatalogStateRegister.filter(itemRecord => {
-                    const validationTextString = itemRecord.name.toLowerCase() + (itemRecord.description ? itemRecord.description.toLowerCase() : '');
-                    const matchesSearchQuerySignature = validationTextString.includes(searchFieldStringValue);
-                    
-                    const matchesStockConstraintRequirements = stockFilterSelectionConstraint === 'all' || (stockFilterSelectionConstraint === 'instock' && itemRecord.quantity > 0);
-
-                    return matchesSearchQuerySignature && matchesStockConstraintRequirements;
-                });
-
-                this.applySortingTransformation(outputProcessingResultsRegister);
-            },
-
-            processCatalogsOrdering: function() {
-                this.executeClientSearch();
-            },
-
-            applySortingTransformation: function(targetWorkingArrayRegister) {
-                const sortingMethodSignatureKey = document.getElementById('priceSortSelect').value;
-
-                if (sortingMethodSignatureKey === 'low-high') {
-                    targetWorkingArrayRegister.sort((firstNode, secondNode) => firstNode.price - secondNode.price);
-                } else if (sortingMethodSignatureKey === 'high-low') {
-                    targetWorkingArrayRegister.sort((firstNode, secondNode) => secondNode.price - firstNode.price);
-                }
-
-                InterfaceUIGenerator.injectCardsToGrid(targetWorkingArrayRegister);
-            }
-        };
-
-        /**
-         * TRANSACTIONS OPERATION PIPELINES (POST REQUEST ROUTINES MODULE ENGINE)
-         */
-        const TransactionalCartDispatchEngine = {
-            dispatchCartPayloadItem: async function(targetedDatabaseProductIdKey, clearTextProductName) {
+        async function fetchAndDisplayProducts() {
+            const shimmerGrid = document.getElementById('shimmerInstanceGrid');
+            const productsContainer = document.getElementById('productsContainer');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/products`);
                 
-                // 👈 THIS IS THE NEW CONFIRMATION POP-UP LOGIC!
-                const userConfirmed = confirm(`Are you sure you want to add "${clearTextProductName}" to your shopping cart?`);
-                if (!userConfirmed) {
-                    return; // Stop the function completely if the user clicks "Cancel"
+                if (!response.ok) {
+                    throw new Error('Server returned status: ' + response.status);
                 }
 
-                try {
-                    const transactionalCartPayloadRequestEndpoint = AppServiceConfig.endpoints.appendCart;
-                    const networkDispatchTransactionResponse = await fetch(transactionalCartPayloadRequestEndpoint, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            userId: CURRENT_ACTIVE_USER_ID,
-                            productId: targetedDatabaseProductIdKey,
-                            quantity: 1
-                        })
-                    });
+                allProducts = await response.json();
+                
+                // Hide shimmer loader and show grid
+                shimmerGrid.style.display = 'none';
+                productsContainer.style.display = 'grid';
 
-                    if (!networkDispatchTransactionResponse.ok) {
-                        const parsingServerResponseErrorMessage = await networkDispatchTransactionResponse.text();
-                        throw new Error(parsingServerResponseErrorMessage || "The server orchestrator rejected transaction execution constraints.");
-                    }
+                renderProducts(allProducts);
 
-                    CatalogToastSystem.triggerNotification(`🎉 Excellent selection! ${clearTextProductName} successfully mapped into your relational database cart storage tables.`, 'success');
-                } catch (payloadTransmissionPipelineFaultException) {
-                    console.error("Cart insertion operational mutation workflow anomaly caught:", payloadTransmissionPipelineFaultException);
-                    CatalogToastSystem.triggerNotification(`Failed to record selection mapping: ${payloadTransmissionPipelineFaultException.message}`, 'danger');
-                }
+            } catch (error) {
+                console.error('Error fetching products:', error);
+                shimmerGrid.innerHTML = `<p style="color: var(--danger-red); text-align: center; grid-column: 1/-1; padding: 40px; background: white; border-radius: 12px;">Failed to load products. Make sure your Spring Boot backend is running.</p>`;
             }
-        };
+        }
 
-        // Wire startup life cycles database calls processing pipelines hooks to the structural parsing completion events thread loop
-        document.getElementById('searchInput').addEventListener('input', () => SearchFilterEngine.executeClientSearch());
-        document.addEventListener('DOMContentLoaded', fetchProductsFromDatabaseEngine);
+        function renderProducts(productsToRender) {
+            const productsContainer = document.getElementById('productsContainer');
+            productsContainer.innerHTML = '';
+
+            if (productsToRender.length === 0) {
+                productsContainer.innerHTML = `<p style="text-align: center; grid-column: 1/-1; padding: 40px; background: white; border-radius: 12px; color: #64748b;">No products found matching your criteria.</p>`;
+                return;
+            }
+
+            productsToRender.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                
+                // Fallback image in case external URL fails
+                const fallbackImage = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600';
+                
+                // Correctly references product.imageUrl (matching Spring Boot JSON)
+                const imageSrc = (product.imageUrl && product.imageUrl.trim() !== '') 
+                    ? product.imageUrl 
+                    : fallbackImage;
+                
+                card.innerHTML = `
+                    <img class="card-img" src="${imageSrc}" alt="${product.name}" onerror="this.src='${fallbackImage}'">
+                    <div class="card-body">
+                        <h3>${product.name}</h3>
+                        <p>${product.description || 'No description available for this catalog item.'}</p>
+                        <div class="price-row">
+                            <span class="price">${currencyFormatter.format(product.price)}</span>
+                        </div>
+                        <button class="add-to-cart-btn" onclick="addToCart(${product.id})">Add to Cart</button>
+                    </div>
+                `;
+                productsContainer.appendChild(card);
+            });
+        }
+
+        function sortProducts() {
+            const sortValue = document.getElementById('priceSortSelect').value;
+            let sortedArray = [...allProducts];
+
+            if (sortValue === 'low-high') {
+                sortedArray.sort((a, b) => a.price - b.price);
+            } else if (sortValue === 'high-low') {
+                sortedArray.sort((a, b) => b.price - a.price);
+            }
+
+            renderProducts(sortedArray);
+        }
+
+        function filterProducts() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filteredArray = allProducts.filter(product => 
+                product.name.toLowerCase().includes(searchTerm) || 
+                (product.description && product.description.toLowerCase().includes(searchTerm))
+            );
+            renderProducts(filteredArray);
+        }
+
+        // 🔒 AUTHENTICATION GUARD: Require login before adding to cart
+        async function addToCart(productId) {
+            const sessionData = localStorage.getItem('sessionUser');
+            
+            if (!sessionData) {
+                alert('🔑 Please login to buy products and add items to your cart!');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const currentUser = JSON.parse(sessionData);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/cart/add`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: currentUser.id,
+                        productId: productId,
+                        quantity: 1
+                    })
+                });
+
+                if (response.ok) {
+                    alert('🎉 Product added to cart successfully!');
+                } else {
+                    alert('Failed to add product to cart. Please check backend connection.');
+                }
+            } catch (err) {
+                console.error("Cart API Error:", err);
+                alert("Error connecting to server.");
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            applySmartNavbar();
+            fetchAndDisplayProducts();
+        });
     </script>
 </body>
 </html>

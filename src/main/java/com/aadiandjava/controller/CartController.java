@@ -1,7 +1,11 @@
 package com.aadiandjava.controller;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,28 +22,60 @@ import com.aadiandjava.service.CartService;
 
 @RestController
 @RequestMapping("/api/cart")
-@CrossOrigin(origins = "*") // Critical to prevent browser cross-origin blocking mechanics
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class CartController {
 
-    private final CartService cartService;
+    @Autowired
+    private CartService cartService;
 
-    public CartController(CartService cartService) {
-        this.cartService = cartService;
+    // 1. Fetch all cart items for a specific user ID
+    @GetMapping("/{userId}")
+    public ResponseEntity<?> getCartByUser(@PathVariable Long userId) {
+        try {
+            List<CartResponse> cartItems = cartService.getCartByUser(userId);
+            return ResponseEntity.ok(cartItems != null ? cartItems : Collections.emptyList());
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to fetch cart: " + ex.getMessage()));
+        }
     }
 
+    // 2. Add or update item in cart
     @PostMapping("/add")
-    public ResponseEntity<CartResponse> addToCart(@RequestBody CartRequest request) {
-        return ResponseEntity.ok(cartService.addItemToCart(request));
+    public ResponseEntity<?> addToCart(@RequestBody CartRequest request) {
+        try {
+            CartResponse addedItem = cartService.addItemToCart(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(addedItem);
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Could not add item to cart: " + ex.getMessage()));
+        }
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<CartResponse>> viewCart(@PathVariable Long userId) {
-        return ResponseEntity.ok(cartService.getCartByUser(userId));
+    // 3. Remove a single item from cart by cartItemId
+    @DeleteMapping("/{cartItemId}")
+    public ResponseEntity<?> removeCartItem(@PathVariable Long cartItemId) {
+        try {
+            cartService.removeCartItem(cartItemId);
+            return ResponseEntity.ok(Map.of("message", "Item removed from cart successfully."));
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "An error occurred while deleting the item."));
+        }
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> removeCartItem(@PathVariable Long id) {
-        cartService.removeCartItem(id);
-        return ResponseEntity.ok("Item reference successfully purged from active table storage state.");
+    // 4. Clear all cart items for a specific user ID (used after checkout)
+    @DeleteMapping("/clear/{userId}")
+    public ResponseEntity<?> clearCartByUser(@PathVariable Long userId) {
+        try {
+            cartService.clearCartByUser(userId);
+            return ResponseEntity.ok(Map.of("message", "Cart cleared successfully."));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to clear cart: " + ex.getMessage()));
+        }
     }
 }

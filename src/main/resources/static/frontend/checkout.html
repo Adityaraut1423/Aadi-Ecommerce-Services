@@ -100,7 +100,8 @@
     </div>
 
     <script>
-        const API_ORDERS_URL = 'http://localhost:8080/api/orders';
+        // Updated to use the live cloud backend API endpoint
+        const API_ORDERS_URL = 'https://aadi-ecommerce-services-1.onrender.com/api/orders';
 
         document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
             e.preventDefault();

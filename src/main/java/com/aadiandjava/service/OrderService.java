@@ -45,9 +45,9 @@ public class OrderService {
         double totalAmount = 0;
         for (Cart item : cartItems) {
             // Price * Quantity
-            totalAmount += (item.getProduct().getPrice() * item.getQuantity()); 
+            totalAmount += (item.getProduct().getPrice() * item.getQuantity());
         }
-        
+
         // Add 18% Tax (Matching frontend logic)
         totalAmount = totalAmount + (totalAmount * 0.18);
 
@@ -56,7 +56,7 @@ public class OrderService {
         order.setUser(user);
         order.setTotalAmount(Math.round(totalAmount * 100.0) / 100.0); // Round to 2 decimals
         order.setOrderDate(LocalDateTime.now());
-        
+
         Order savedOrder = orderRepository.save(order);
 
         // 5. Clear the User's Cart
@@ -68,7 +68,7 @@ public class OrderService {
 
     public List<OrderResponse> getOrdersByUser(Long userId) {
         List<Order> orders = orderRepository.findByUserId(userId);
-        
+
         // Map Order entities to OrderResponse DTOs
         return orders.stream()
                 .map(order -> new OrderResponse(order.getId(), order.getUser().getId(), order.getTotalAmount(), order.getOrderDate()))

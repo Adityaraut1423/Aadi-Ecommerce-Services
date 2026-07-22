@@ -548,7 +548,7 @@
                 <li><a href="products.html">Products</a></li>
                 <li><a href="cart.html" class="active">Cart</a></li>
                 <li><a href="orders.html">My Orders</a></li>
-                <li><a href="login.html">Login</a></li>
+                <li id="authLink"><a href="login.html">Login</a></li>
             </ul>
         </nav>
     </header>
@@ -652,41 +652,91 @@
         </div>
     </footer>
 
-    <!-- DYNAMIC SYSTEM PROGRAM CONTROL INTERFACES ENGINE -->
     <script>
+        // 🔒 SAFE AUTHENTICATION GUARD & CONTEXT RESOLUTION
+        const sessionData = localStorage.getItem('sessionUser');
+        let activeProfileContext = null;
+
+        if (sessionData) {
+            try {
+                activeProfileContext = JSON.parse(sessionData);
+            } catch (err) {
+                console.error("Corrupted profile context caught inside LocalStorage:", err);
+                localStorage.removeItem('sessionUser');
+            }
+        }
+
+        if (!activeProfileContext) {
+            alert('🔒 Please login to view your cart and complete purchases.');
+            window.location.href = 'login.html';
+        }
+
+        // Robust User ID Extraction Pattern
+        const CURRENT_OPERATIONAL_USER_ID = activeProfileContext 
+            ? (activeProfileContext.id || activeProfileContext.userId || activeProfileContext.user_id || 1) 
+            : 1;
+
+        // Dynamic Backend Host Detection (Local vs Deployed)
+        const BACKEND_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:8080'
+            : 'https://aadi-ecommerce-services-1.onrender.com';
+
         /**
-         * GLOBAL CONSTANTS & LAYER PARAMETERS SCHEMA CONFIGURATIONS
+         * 1. SYSTEM CORE CONFIGURATION AND ENVIRONMENT TELEMETRY MAPPINGS
          */
         const SystemCoreConfig = {
             endpoints: {
-                baseCartUrl: 'http://localhost:8080/api/cart'
+                baseCartUrl: `${BACKEND_BASE}/api/cart`,
+                ordersUrl: `${BACKEND_BASE}/api/orders`
             },
             taxRateMetric: 0.18,
-            fallbackUserIndex: 1,
             currencyFormattingSignature: 'en-IN',
-            currencyISOCode: 'INR'
+            currencyISOCode: 'INR',
+            telemetryVersion: '4.8.2-RELEASE'
         };
-
-        // Cache session profile structures directly out of internal tracking registers
-        const activeProfileContext = JSON.parse(localStorage.getItem('sessionUser'));
-        const CURRENT_OPERATIONAL_USER_ID = activeProfileContext ? activeProfileContext.id : SystemCoreConfig.fallbackUserIndex;
 
         // Internal transactional mutable state tracking structure
         let cartStateArrayRegister = [];
+        let systemPerformanceMetricsLog = {
+            initTimestamp: Date.now(),
+            networkRequestsCount: 0,
+            errorExceptionsCaptured: 0
+        };
 
-        // Formatting service engine instantiation configuration rules mapping setup
+        // Formatting service engine instantiation
         const currencyConverterPipeline = new Intl.NumberFormat(SystemCoreConfig.currencyFormattingSignature, {
             style: 'currency',
             currency: SystemCoreConfig.currencyISOCode,
             maximumFractionDigits: 0
         });
 
+        // 🌟 DYNAMIC NAVBAR LOGOUT ROUTINE
+        function applySmartNavbar() {
+            const authLinkNode = document.getElementById('authLink');
+            if (activeProfileContext && authLinkNode) {
+                authLinkNode.innerHTML = `
+                    <a href="#" onclick="executeSystemLogout()" style="background: #ef4444; color: white;">
+                        Logout (${activeProfileContext.name ? activeProfileContext.name.split(' ')[0] : 'User'})
+                    </a>
+                `;
+            }
+        }
+
+        window.executeSystemLogout = function() {
+            if (confirm("Are you sure you want to end your session?")) {
+                localStorage.removeItem('sessionUser');
+                window.location.href = 'login.html';
+            }
+        };
+
         /**
-         * SYSTEM ALERT AND TOAST FEEDBACK PLATFORM LOGGER
+         * 2. SYSTEM ALERT AND TOAST FEEDBACK PLATFORM LOGGER ENGINE
          */
         const ToastSystemNotifier = {
             trigger: function(messageTextString, configurationClassType = 'success') {
                 const logsRootNode = document.getElementById('notificationConsole');
+                if (!logsRootNode) return;
+
                 const elementContainer = document.createElement('div');
                 elementContainer.className = `toast-banner ${configurationClassType}`;
                 
@@ -701,45 +751,51 @@
         };
 
         /**
-         * ASYNC DATA ROUTER SERVICE WORKER WRAPPER METHOD ENGINE
+         * 3. ASYNC DATA ROUTER SERVICE WORKER WRAPPER METHOD ENGINE
          */
         async function fetchCartDataFromBackend() {
             const dataLayerLoaderNode = document.getElementById('shimmerInstance');
             const systemRenderLayoutNode = document.getElementById('cartContent');
             const fallbackLayoutNode = document.getElementById('emptyCartState');
 
+            systemPerformanceMetricsLog.networkRequestsCount++;
+
             try {
-                const targetRestEndpoint = `${SystemCoreConfig.endpoints.baseCartUrl}/user/${CURRENT_OPERATIONAL_USER_ID}`;
-                const fetchTransactionResponse = await fetch(targetRestEndpoint);
+                const targetRestEndpoint = `${SystemCoreConfig.endpoints.baseCartUrl}/${CURRENT_OPERATIONAL_USER_ID}`;
+                let fetchTransactionResponse = await fetch(targetRestEndpoint);
                 
                 if (!fetchTransactionResponse.ok) {
-                    throw new Error(`HTTP System Error Code Pipeline Exception Triggered: Status code ${fetchTransactionResponse.status}`);
+                    throw new Error(`HTTP System Error Code: ${fetchTransactionResponse.status}`);
                 }
 
                 cartStateArrayRegister = await fetchTransactionResponse.json();
-                dataLayerLoaderNode.style.display = 'none';
+                if (dataLayerLoaderNode) dataLayerLoaderNode.style.display = 'none';
                 
                 ExecutionRenderEngine.renderInterfaceComponents();
             } catch (networkCallError) {
+                systemPerformanceMetricsLog.errorExceptionsCaptured++;
                 console.error("System Interface Pipeline Failure Exception Details:", networkCallError);
-                dataLayerLoaderNode.style.display = 'none';
-                systemRenderLayoutNode.style.display = 'none';
-                fallbackLayoutNode.style.display = 'none';
+                
+                if (dataLayerLoaderNode) dataLayerLoaderNode.style.display = 'none';
+                if (systemRenderLayoutNode) systemRenderLayoutNode.style.display = 'none';
+                if (fallbackLayoutNode) fallbackLayoutNode.style.display = 'none';
 
                 const targetAppScopeContainer = document.getElementById('appViewScope');
-                targetAppScopeContainer.innerHTML += `
-                    <div class="empty-cart" style="display:block; border-color:var(--danger-red);">
-                        <div class="empty-cart-icon" style="color:var(--danger-red)">⚠️</div>
-                        <h2>Backend Data Interface Blockage</h2>
-                        <p style="max-width:600px; margin:0 auto 24px;">Failed to verify an active data pipeline connection channel to the Spring Boot microservice environment running at port 8080. Confirm target entity structure parameters match data payloads mapping instructions.</p>
-                        <button onclick="window.location.reload()" class="checkout-btn" style="width:auto; padding:12px 30px; background:var(--dark-slate)">Reinitialize Connection Routine</button>
-                    </div>
-                `;
+                if (targetAppScopeContainer && !document.getElementById('networkErrorBlockNode')) {
+                    targetAppScopeContainer.innerHTML += `
+                        <div id="networkErrorBlockNode" class="empty-cart" style="display:block; border-color:var(--danger-red);">
+                            <div class="empty-cart-icon" style="color:var(--danger-red)">⚠️</div>
+                            <h2>Backend Data Interface Blockage</h2>
+                            <p style="max-width:600px; margin:0 auto 24px;">Failed to verify an active data pipeline connection channel to the backend microservice environment. Make sure your Spring Boot application is running.</p>
+                            <button onclick="window.location.reload()" class="checkout-btn" style="width:auto; padding:12px 30px; background:var(--dark-slate)">Reinitialize Connection Routine</button>
+                        </div>
+                    `;
+                }
             }
         }
 
         /**
-         * INTERFACE ELEMENT INJECTION PARSER DOM PROCESSOR ENGINE
+         * 4. INTERFACE ELEMENT INJECTION PARSER DOM PROCESSOR ENGINE
          */
         const ExecutionRenderEngine = {
             renderInterfaceComponents: function() {
@@ -748,40 +804,44 @@
                 const emptyDataStatePanelNode = document.getElementById('emptyCartState');
 
                 if (!cartStateArrayRegister || cartStateArrayRegister.length === 0) {
-                    gridLayoutRootContainer.style.display = 'none';
-                    emptyDataStatePanelNode.style.display = 'block';
+                    if (gridLayoutRootContainer) gridLayoutRootContainer.style.display = 'none';
+                    if (emptyDataStatePanelNode) emptyDataStatePanelNode.style.display = 'block';
                     return;
                 }
 
-                emptyDataStatePanelNode.style.display = 'none';
-                gridLayoutRootContainer.style.display = 'grid';
-                injectionListTargetNode.innerHTML = '';
+                if (emptyDataStatePanelNode) emptyDataStatePanelNode.style.display = 'none';
+                if (gridLayoutRootContainer) gridLayoutRootContainer.style.display = 'grid';
+                if (injectionListTargetNode) injectionListTargetNode.innerHTML = '';
 
                 cartStateArrayRegister.forEach(cartItemRowRecord => {
-                    // DYNAMIC DATA MAPPING SOLUTION: Pulls dynamic product graphic URLs directly out of your MySQL data tables payload structures
                     const processedDynamicImageString = cartItemRowRecord.imageUrl && cartItemRowRecord.imageUrl.trim() !== '' 
                         ? cartItemRowRecord.imageUrl 
-                        : 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200';
+                        : (cartItemRowRecord.product && cartItemRowRecord.product.imageUrl) || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200';
 
-                    injectionListTargetNode.innerHTML += `
-                        <article class="cart-item" id="cart-item-wrapper-row-${cartItemRowRecord.id}">
-                            <img src="${processedDynamicImageString}" alt="${cartItemRowRecord.productName}" onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200'">
-                            <div class="item-details">
-                                <h3>${cartItemRowRecord.productName}</h3>
-                                <p>SQL Primary Ident Key: #${cartItemRowRecord.id}</p>
-                                <p style="margin-top:2px;">Product Master Index Reference: #${cartItemRowRecord.productId}</p>
-                            </div>
-                            <div class="item-price">${currencyConverterPipeline.format(cartItemRowRecord.price)}</div>
-                            <div class="quantity-controls">
-                                <button type="button" aria-label="Decrement item quantity" onclick="TransactionalStateMutationEngine.modifyQuantityAllocation(${cartItemRowRecord.id}, ${cartItemRowRecord.productId}, -1)">-</button>
-                                <span id="display-quantity-metric-field-${cartItemRowRecord.id}">${cartItemRowRecord.quantity}</span>
-                                <button type="button" aria-label="Increment item quantity" onclick="TransactionalStateMutationEngine.modifyQuantityAllocation(${cartItemRowRecord.id}, ${cartItemRowRecord.productId}, 1)">+</button>
-                            </div>
-                            <button class="remove-btn" type="button" aria-label="Purge allocation row record" onclick="TransactionalStateMutationEngine.executeDeletionCallRoutine(${cartItemRowRecord.id})">
-                                🗑️
-                            </button>
-                        </article>
-                    `;
+                    const resolvedItemTitleName = cartItemRowRecord.productName || (cartItemRowRecord.product && cartItemRowRecord.product.name) || 'Catalog Inventory Item';
+                    const resolvedItemUnitPrice = cartItemRowRecord.price || (cartItemRowRecord.product && cartItemRowRecord.product.price) || 0;
+
+                    if (injectionListTargetNode) {
+                        injectionListTargetNode.innerHTML += `
+                            <article class="cart-item" id="cart-item-wrapper-row-${cartItemRowRecord.id}">
+                                <img src="${processedDynamicImageString}" alt="${resolvedItemTitleName}" onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200'">
+                                <div class="item-details">
+                                    <h3>${resolvedItemTitleName}</h3>
+                                    <p>SQL Primary Ident Key: #${cartItemRowRecord.id}</p>
+                                    <p style="margin-top:2px;">Product Master Index Reference: #${cartItemRowRecord.productId || 'N/A'}</p>
+                                </div>
+                                <div class="item-price">${currencyConverterPipeline.format(resolvedItemUnitPrice)}</div>
+                                <div class="quantity-controls">
+                                    <button type="button" aria-label="Decrement item quantity" onclick="TransactionalStateMutationEngine.modifyQuantityAllocation(${cartItemRowRecord.id}, ${cartItemRowRecord.productId || 0}, -1)">-</button>
+                                    <span id="display-quantity-metric-field-${cartItemRowRecord.id}">${cartItemRowRecord.quantity}</span>
+                                    <button type="button" aria-label="Increment item quantity" onclick="TransactionalStateMutationEngine.modifyQuantityAllocation(${cartItemRowRecord.id}, ${cartItemRowRecord.productId || 0}, 1)">+</button>
+                                </div>
+                                <button class="remove-btn" type="button" aria-label="Purge allocation row record" onclick="TransactionalStateMutationEngine.executeDeletionCallRoutine(${cartItemRowRecord.id})">
+                                    🗑️
+                                </button>
+                            </article>
+                        `;
+                    }
                 });
 
                 this.recalculateFinancialAggregations();
@@ -792,37 +852,41 @@
                 let aggregateQuantityMetricsTracker = 0;
 
                 cartStateArrayRegister.forEach(itemStateReferenceObject => {
-                    financialSubtotalAccumulator += (itemStateReferenceObject.price * itemStateReferenceObject.quantity);
+                    const unitPriceVal = itemStateReferenceObject.price || (itemStateReferenceObject.product && itemStateReferenceObject.product.price) || 0;
+                    financialSubtotalAccumulator += (unitPriceVal * itemStateReferenceObject.quantity);
                     aggregateQuantityMetricsTracker += itemStateReferenceObject.quantity;
                 });
 
-                // Read voucher modifier values out of state memory parameters
                 const computedDeductionValue = PromoSystemEngine.calculateDeductionAmount(financialSubtotalAccumulator);
                 const postDeductionSubtotal = Math.max(0, financialSubtotalAccumulator - computedDeductionValue);
                 
                 const statutoryTaxesCalculation = Math.round(postDeductionSubtotal * SystemCoreConfig.taxRateMetric);
                 const finalGrossAggregatedTotal = postDeductionSubtotal + statutoryTaxesCalculation;
 
-                // Bind computational text fields to UI targets
-                document.getElementById('totalItemsCount').textContent = aggregateQuantityMetricsTracker;
-                document.getElementById('subtotalCost').textContent = currencyConverterPipeline.format(financialSubtotalAccumulator);
-                document.getElementById('taxCost').textContent = currencyConverterPipeline.format(statutoryTaxesCalculation);
-                document.getElementById('finalTotal').textContent = currencyConverterPipeline.format(finalGrossAggregatedTotal);
+                const countNode = document.getElementById('totalItemsCount');
+                const subNode = document.getElementById('subtotalCost');
+                const taxNode = document.getElementById('taxCost');
+                const totalNode = document.getElementById('finalTotal');
+
+                if (countNode) countNode.textContent = aggregateQuantityMetricsTracker;
+                if (subNode) subNode.textContent = currencyConverterPipeline.format(financialSubtotalAccumulator);
+                if (taxNode) taxNode.textContent = currencyConverterPipeline.format(statutoryTaxesCalculation);
+                if (totalNode) totalNode.textContent = currencyConverterPipeline.format(finalGrossAggregatedTotal);
 
                 const discountUIFieldContainer = document.getElementById('couponDeductionRow');
                 const discountValueUIField = document.getElementById('couponDeductionVal');
 
                 if (computedDeductionValue > 0) {
-                    discountUIFieldContainer.style.display = 'flex';
-                    discountValueUIField.textContent = `-${currencyConverterPipeline.format(computedDeductionValue)}`;
+                    if (discountUIFieldContainer) discountUIFieldContainer.style.display = 'flex';
+                    if (discountValueUIField) discountValueUIField.textContent = `-${currencyConverterPipeline.format(computedDeductionValue)}`;
                 } else {
-                    discountUIFieldContainer.style.display = 'none';
+                    if (discountUIFieldContainer) discountUIFieldContainer.style.display = 'none';
                 }
             }
         };
 
         /**
-         * TRANSACTIONAL LAYER OPERATIONS ENGINE (CREATE, UPDATE, DELETE ROUTINES)
+         * 5. TRANSACTIONAL LAYER OPERATIONS MUTATION ENGINE
          */
         const TransactionalStateMutationEngine = {
             modifyQuantityAllocation: async function(cartTableRowKeyIndex, physicalProductMasterKey, directionalDeltaValue) {
@@ -836,6 +900,8 @@
                     return;
                 }
 
+                systemPerformanceMetricsLog.networkRequestsCount++;
+
                 try {
                     const transactionalMutationEndpoint = `${SystemCoreConfig.endpoints.baseCartUrl}/add`;
                     const networkPayloadDispatchResponse = await fetch(transactionalMutationEndpoint, {
@@ -843,7 +909,7 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             userId: CURRENT_OPERATIONAL_USER_ID,
-                            productId: physicalProductMasterKey,
+                            productId: physicalProductMasterKey > 0 ? physicalProductMasterKey : (targetLocalStateObject.productId || 1),
                             quantity: directionalDeltaValue
                         })
                     });
@@ -854,19 +920,22 @@
 
                     targetLocalStateObject.quantity = tentativeQuantityOutcome;
                     
-                    document.getElementById(`display-quantity-metric-field-${cartTableRowKeyIndex}`).textContent = tentativeQuantityOutcome;
-                    ExecutionRenderEngine.recalculateFinancialAggregations();
+                    const quantityFieldNode = document.getElementById(`display-quantity-metric-field-${cartTableRowKeyIndex}`);
+                    if (quantityFieldNode) quantityFieldNode.textContent = tentativeQuantityOutcome;
                     
+                    ExecutionRenderEngine.recalculateFinancialAggregations();
                     ToastSystemNotifier.trigger("System data tables modified successfully.", "success");
                 } catch (dataMutationNetworkError) {
+                    systemPerformanceMetricsLog.errorExceptionsCaptured++;
                     console.error("Mutation task process anomaly caught:", dataMutationNetworkError);
                     ToastSystemNotifier.trigger("Failed to persist database quantity adjustment operations.", "danger");
                 }
             },
 
             executeDeletionCallRoutine: async function(cartItemRowDeletionIndexKey) {
-                // Keep the confirmation pop up for deletion logic intact!
                 if (!confirm("Are you sure you want to drop this allocation item row from your active relational SQL schema table records?")) return;
+
+                systemPerformanceMetricsLog.networkRequestsCount++;
 
                 try {
                     const transactionalPurgeEndpoint = `${SystemCoreConfig.endpoints.baseCartUrl}/${cartItemRowDeletionIndexKey}`;
@@ -878,12 +947,12 @@
                         throw new Error("Spring Boot relational tables orchestrator returned an internal execution fault.");
                     }
 
-                    // Mutate internal state cache tracking engine arrays values matching data layer drop triggers
                     cartStateArrayRegister = cartStateArrayRegister.filter(record => record.id !== cartItemRowDeletionIndexKey);
                     
                     ExecutionRenderEngine.renderInterfaceComponents();
                     ToastSystemNotifier.trigger("Relational row record successfully purged from table arrays.", "success");
                 } catch (deletionNetworkFaultError) {
+                    systemPerformanceMetricsLog.errorExceptionsCaptured++;
                     console.error("Purge routine system network failure processing error caught:", deletionNetworkFaultError);
                     ToastSystemNotifier.trigger("Failed to execute database entity record deletion process script.", "danger");
                 }
@@ -891,7 +960,7 @@
         };
 
         /**
-         * VOUCHER AND TOKEN DEDUCTION PROMOTIONS SUB-SYSTEM LAYER MODULE ENGINE
+         * 6. VOUCHER AND TOKEN DEDUCTION PROMOTIONS ENGINE
          */
         const PromoSystemEngine = {
             activeAppliedCouponTokenState: null,
@@ -902,8 +971,11 @@
             },
 
             applyTokenReduction: function() {
-                const rawInputString = document.getElementById('promoCodeField').value.toUpperCase().trim();
+                const promoFieldInput = document.getElementById('promoCodeField');
                 const statusMessageUINode = document.getElementById('promoStatusMessage');
+                if (!promoFieldInput || !statusMessageUINode) return;
+
+                const rawInputString = promoFieldInput.value.toUpperCase().trim();
 
                 if (rawInputString === '') {
                     statusMessageUINode.style.display = 'block';
@@ -935,7 +1007,7 @@
         };
 
         /**
-         * TRANSACTION FINALIZATION AND SERVICE DISPATCHING ROUTERS ARCHITECTURE
+         * 7. TRANSACTION FINALIZATION AND SERVICE DISPATCHING ROUTERS
          */
         const CheckoutPipelineManager = {
             executeTransactionTunnel: function() {
@@ -943,19 +1015,22 @@
                     ToastSystemNotifier.trigger("Aborting tunnel route execution. Active payload data arrays register empty.", "danger");
                     return;
                 }
-                
-                // POP THE MODAL OPEN
-                document.getElementById('paymentModal').style.display = 'flex';
+                const modalNode = document.getElementById('paymentModal');
+                if (modalNode) modalNode.style.display = 'flex';
             },
 
             confirmAndSubmitOrder: async function() {
-                const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
-                document.getElementById('paymentModal').style.display = 'none';
+                const selectedMethodInput = document.querySelector('input[name="paymentMethod"]:checked');
+                const selectedMethod = selectedMethodInput ? selectedMethodInput.value : 'UPI';
+                
+                const modalNode = document.getElementById('paymentModal');
+                if (modalNode) modalNode.style.display = 'none';
 
                 ToastSystemNotifier.trigger(`Processing payment via ${selectedMethod}...`, 'success');
+                systemPerformanceMetricsLog.networkRequestsCount++;
 
                 try {
-                    const response = await fetch('http://localhost:8080/api/orders', {
+                    const response = await fetch(SystemCoreConfig.endpoints.ordersUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -969,23 +1044,24 @@
                         throw new Error(errText || "Order execution failed.");
                     }
 
-                    const orderResult = await response.json();
                     ToastSystemNotifier.trigger("🎉 Order placed successfully! Thank you for shopping with Aadi Store.", "success");
 
-                    // Send the user back to the catalog after successful order
                     setTimeout(() => {
                         window.location.href = 'products.html';
                     }, 2500);
 
                 } catch (error) {
+                    systemPerformanceMetricsLog.errorExceptionsCaptured++;
                     console.error("Checkout transaction error:", error);
                     ToastSystemNotifier.trigger("Failed to process order transaction pipeline.", "danger");
                 }
             }
         };
 
-        // Hook system startup initialization procedures to DOM content parsing completions events thread loops
-        document.addEventListener('DOMContentLoaded', fetchCartDataFromBackend);
+        document.addEventListener('DOMContentLoaded', () => {
+            applySmartNavbar();
+            fetchCartDataFromBackend();
+        });
     </script>
 </body>
 </html>
