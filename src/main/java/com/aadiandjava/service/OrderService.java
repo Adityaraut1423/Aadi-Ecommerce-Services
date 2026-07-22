@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.aadiandjava.dto.OrderRequest;
 import com.aadiandjava.dto.OrderResponse;
@@ -16,6 +15,8 @@ import com.aadiandjava.entity.User;
 import com.aadiandjava.repository.CartRepository;
 import com.aadiandjava.repository.OrderRepository;
 import com.aadiandjava.repository.UserRepository;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class OrderService {

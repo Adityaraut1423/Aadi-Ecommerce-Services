@@ -5,13 +5,14 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.aadiandjava.dto.CartRequest;
 import com.aadiandjava.dto.CartResponse;
 import com.aadiandjava.entity.Cart; // 👈 Import from your entity package
 import com.aadiandjava.repository.CartRepository;
 import com.aadiandjava.service.CartService;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class CartServiceImpl implements CartService {

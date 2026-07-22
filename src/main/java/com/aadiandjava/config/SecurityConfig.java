@@ -5,7 +5,7 @@ import java.util.Arrays;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
+import org.springframework.security.config.Customizer; // 🌟 CORRECT IMPORT
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,12 +31,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors(Customizer.withDefaults()) // Activates the CORS bean below
+            .cors(Customizer.withDefaults()) // Activates the CorsConfigurationSource bean below
             .csrf(csrf -> csrf.disable())    // Disabled for REST API usage
             .authorizeHttpRequests(auth -> auth
                     // Public Authentication Endpoints
                     .requestMatchers("/api/users/login", "/api/users/register").permitAll()
-                    // Public Product Catalog Endpoints (Explicit matchers)
+                    // Public Product Catalog Endpoints
                     .requestMatchers(HttpMethod.GET, "/api/products", "/api/products/**").permitAll()
                     // Allow preflight options requests
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -59,7 +59,8 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(Arrays.asList(
             "https://aadi-ecommerce-store-a3a0f.web.app",
             "http://localhost:3000",
-            "http://127.0.0.1:5500"
+            "http://127.0.0.1:5500",
+            "http://localhost:8080"
         ));
 
         // Allow all standard HTTP methods
