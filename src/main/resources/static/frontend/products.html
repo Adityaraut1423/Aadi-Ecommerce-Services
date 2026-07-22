@@ -73,10 +73,12 @@
             align-items: center;
             justify-content: space-between;
             animation: slideInRight var(--transition-speed) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            font-size: 14px;
+            font-weight: 600;
         }
 
-        .toast-banner.success { border-left-color: var(--success-green); }
-        .toast-banner.danger { border-left-color: var(--danger-red); }
+        .toast-banner.success { border-left-color: var(--success-green); color: var(--dark-slate); }
+        .toast-banner.danger { border-left-color: var(--danger-red); color: var(--danger-red); }
         
         @keyframes slideInRight {
             from { transform: translateX(120%); opacity: 0; }
@@ -155,6 +157,7 @@
             list-style: none;
             display: flex;
             align-items: center;
+            gap: 8px;
         }
 
         nav ul li a {
@@ -459,7 +462,7 @@
 
     <!-- RUNTIME DATA ROUTER PIPELINE ENGINES -->
     <script>
-        // Automatic Backend URL selection (Local vs Production)
+        // Correct Production Backend URL pointing to your live Render instance
         const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
             ? 'http://localhost:8080'
             : 'https://aadi-ecommerce-services-1.onrender.com';
@@ -473,6 +476,20 @@
             maximumFractionDigits: 0
         });
 
+        // Toast Notification System
+        function showNotification(message, type = 'success') {
+            const consoleBox = document.getElementById('notificationConsole');
+            const toast = document.createElement('div');
+            toast.className = `toast-banner ${type}`;
+            toast.innerHTML = `<span>${message}</span>`;
+            
+            consoleBox.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3500);
+        }
+
         // Dynamic Auth Navbar Display
         function applySmartNavbar() {
             const sessionData = localStorage.getItem('sessionUser');
@@ -480,15 +497,17 @@
             
             if (sessionData && authLinkNode) {
                 const activeUser = JSON.parse(sessionData);
+                const firstName = activeUser.name ? activeUser.name.split(' ')[0] : 'User';
                 authLinkNode.innerHTML = `
-                    <a href="#" onclick="executeSystemLogout()" style="background: #ef4444; color: white;">
-                        Logout (${activeUser.name ? activeUser.name.split(' ')[0] : 'User'})
+                    <a href="#" onclick="executeSystemLogout(event)" style="background: #ef4444; color: white;">
+                        Logout (${firstName})
                     </a>
                 `;
             }
         }
 
-        window.executeSystemLogout = function() {
+        window.executeSystemLogout = function(e) {
+            e.preventDefault();
             if (confirm("Are you sure you want to log out?")) {
                 localStorage.removeItem('sessionUser');
                 window.location.reload();
@@ -516,7 +535,7 @@
 
             } catch (error) {
                 console.error('Error fetching products:', error);
-                shimmerGrid.innerHTML = `<p style="color: var(--danger-red); text-align: center; grid-column: 1/-1; padding: 40px; background: white; border-radius: 12px;">Failed to load products. Make sure your Spring Boot backend is running.</p>`;
+                shimmerGrid.innerHTML = `<p style="color: var(--danger-red); text-align: center; grid-column: 1/-1; padding: 40px; background: white; border-radius: 12px; font-weight: 600;">Failed to load products from live cloud database. Please verify service health on Render.</p>`;
             }
         }
 
@@ -525,7 +544,7 @@
             productsContainer.innerHTML = '';
 
             if (productsToRender.length === 0) {
-                productsContainer.innerHTML = `<p style="text-align: center; grid-column: 1/-1; padding: 40px; background: white; border-radius: 12px; color: #64748b;">No products found matching your criteria.</p>`;
+                productsContainer.innerHTML = `<p style="text-align: center; grid-column: 1/-1; padding: 40px; background: white; border-radius: 12px; color: #64748b;">No products found matching your search.</p>`;
                 return;
             }
 
@@ -533,10 +552,8 @@
                 const card = document.createElement('div');
                 card.className = 'card';
                 
-                // Fallback image in case external URL fails
                 const fallbackImage = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600';
                 
-                // Correctly references product.imageUrl (matching Spring Boot JSON)
                 const imageSrc = (product.imageUrl && product.imageUrl.trim() !== '') 
                     ? product.imageUrl 
                     : fallbackImage;
@@ -583,12 +600,18 @@
             const sessionData = localStorage.getItem('sessionUser');
             
             if (!sessionData) {
-                alert('🔑 Please login to buy products and add items to your cart!');
-                window.location.href = 'login.html';
+                showNotification('🔑 Please log in to add items to your cart!', 'danger');
+                setTimeout(() => { window.location.href = 'login.html'; }, 1500);
                 return;
             }
 
             const currentUser = JSON.parse(sessionData);
+
+            if (!currentUser || !currentUser.id) {
+                showNotification('Session invalid. Please log in again.', 'danger');
+                setTimeout(() => { window.location.href = 'login.html'; }, 1500);
+                return;
+            }
 
             try {
                 const response = await fetch(`${API_BASE_URL}/api/cart/add`, {
@@ -602,13 +625,13 @@
                 });
 
                 if (response.ok) {
-                    alert('🎉 Product added to cart successfully!');
+                    showNotification('🎉 Product added to cart successfully!', 'success');
                 } else {
-                    alert('Failed to add product to cart. Please check backend connection.');
+                    showNotification('Failed to add product to cart. Please try again.', 'danger');
                 }
             } catch (err) {
                 console.error("Cart API Error:", err);
-                alert("Error connecting to server.");
+                showNotification('Error connecting to backend server.', 'danger');
             }
         }
 
