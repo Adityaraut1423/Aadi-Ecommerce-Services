@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Admin Console | Aadi Store</title>
+    <style>
+        :root {
+            --primary-blue: #1e3a8a;
+            --accent-blue: #2563eb;
+            --danger-red: #ef4444;
+            --success-green: #16a34a;
+            --warning-orange: #f59e0b;
+            --dark-slate: #0f172a;
+            --muted-slate: #334155;
+            --gray-cool: #f1f5f9;
+            --border-light: #e2e8f0;
+            --sidebar-width: 260px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background: var(--gray-cool); color: var(--dark-slate); display: flex; min-height: 100vh; overflow-x: hidden; }
+
+        /* SIDEBAR NAVIGATION */
+        aside {
+            width: var(--sidebar-width);
+            background: var(--dark-slate);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            font-size: 22px;
+            font-weight: 800;
+            background: rgba(0,0,0,0.2);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            text-align: center;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 20px 0;
+            flex: 1;
+        }
+
+        .nav-menu li {
+            padding: 15px 24px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+            color: #cbd5e1;
+            border-left: 4px solid transparent;
+        }
+
+        .nav-menu li:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-menu li.active { background: rgba(37,99,235,0.15); color: white; border-left-color: var(--accent-blue); }
+
+        .admin-profile {
+            padding: 20px;
+            background: rgba(0,0,0,0.2);
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .admin-profile p { font-size: 14px; margin-bottom: 10px; font-weight: 600; color: #94a3b8; }
+        .logout-btn { background: var(--danger-red); width: 100%; }
+
+        /* MAIN CONTENT AREA */
+        main {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 40px;
+            width: calc(100% - var(--sidebar-width));
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header-top h1 { font-size: 28px; font-weight: 800; }
+        .store-link { color: var(--accent-blue); text-decoration: none; font-weight: 600; }
+        .store-link:hover { text-decoration: underline; }
+
+        /* SECTION TOGGLING */
+        .dashboard-section { display: none; animation: fadeIn 0.3s ease; }
+        .dashboard-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* CARDS & GRIDS */
+        .grid-layout { display: grid; grid-template-columns: 350px 1fr; gap: 30px; align-items: start; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border-light); }
+        .card h2 { margin-bottom: 20px; font-size: 18px; color: var(--primary-blue); border-bottom: 2px solid var(--gray-cool); padding-bottom: 12px; }
+
+        /* FORMS */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: var(--muted-slate); text-transform: uppercase; }
+        .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border-light); border-radius: 6px; outline: none; background: #f8fafc; }
+        .form-group input:focus, .form-group textarea:focus { border-color: var(--accent-blue); background: white; }
+        
+        button { background: var(--accent-blue); color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        button:hover { background: #1d4ed8; }
+        button.danger { background: var(--danger-red); }
+        button.danger:hover { background: #b91c1c; }
+        button.warning { background: var(--warning-orange); }
+
+        /* DATA TABLES */
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 14px 16px; border-bottom: 1px solid var(--border-light); font-size: 14px; }
+        th { background: #f8fafc; color: var(--muted-slate); font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+        tr:hover td { background: #f1f5f9; }
+        td img { width: 45px; height: 45px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border-light); }
+        
+        .role-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .role-admin { background: #dbeafe; color: var(--primary-blue); }
+        .role-customer { background: #e2e8f0; color: var(--muted-slate); }
+
+        /* TOAST NOTIFICATION */
+        .toast { position: fixed; top: 24px; right: 24px; background: var(--success-green); color: white; padding: 16px 24px; border-radius: 8px; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.2); transform: translateX(150%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); z-index: 9999; }
+        .toast.show { transform: translateX(0); }
+        .toast.error { background: var(--danger-red); border-left: 4px solid #7f1d1d; }
+
+    </style>
+</head>
+<body>
+
+    <div id="toast" class="toast">System updated successfully!</div>
+
+    <!-- SIDEBAR -->
+    <aside>
+        <div class="sidebar-header">Aadi Admin</div>
+        <ul class="nav-menu">
+            <li class="active" onclick="switchTab('products')" id="nav-products">📦 Manage Products</li>
+            <li onclick="switchTab('users')" id="nav-users">👥 Manage Users</li>
+            <li onclick="switchTab('orders')" id="nav-orders">🛒 Manage Orders</li>
+            <li onclick="switchTab('settings')" id="nav-settings">⚙️ System Settings</li>
+        </ul>
+        <div class="admin-profile">
+            <p id="adminNameDisplay">Logged in as: Admin</p>
+            <button class="logout-btn" onclick="executeSystemLogout()">Sign Out</button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main>
+        <div class="header-top">
+            <h1 id="pageTitle">Product Inventory</h1>
+            <a href="index.html" class="store-link">← Return to Storefront</a>
+        </div>
+        
+        <!-- SECTION 1: PRODUCTS -->
+        <section id="products-section" class="dashboard-section active">
+            <div class="grid-layout">
+                <!-- ADD PRODUCT FORM -->
+                <div class="card">
+                    <h2>Add New Product</h2>
+                    <form id="addProductForm">
+                        <div class="form-group">
+                            <label>Product Name</label>
+                            <input type="text" id="pName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Price (₹)</label>
+                            <input type="number" id="pPrice" required min="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Stock Quantity</label>
+                            <input type="number" id="pQuantity" required min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Image URL</label>
+                            <input type="url" id="pImageUrl" placeholder="https://example.com/image.jpg">
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea id="pDesc" rows="4"></textarea>
+                        </div>
+                        <button type="submit" style="width: 100%;">Create Product</button>
+                    </form>
+                </div>
+
+                <!-- PRODUCT LIST TABLE -->
+                <div class="card table-container">
+                    <h2>Live Catalog Database</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Image</th>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Price</th>
+                                <th>Stock</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTableBody">
+                            <!-- Injected via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: USERS -->
+        <section id="users-section" class="dashboard-section">
+            <div class="card table-container">
+                <h2>Registered Users Database</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Full Name</th>
+                            <th>Email Address</th>
+                            <th>Security Role</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <!-- Injected via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECTION 4: ORDERS -->
+        <section id="orders-section" class="dashboard-section">
+            <div class="card table-container">
+                <h2>Global Order Database</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer ID</th>
+                            <th>Date & Time</th>
+                            <th>Total Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody">
+                        <!-- Injected via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECTION 3: SETTINGS -->
+        <section id="settings-section" class="dashboard-section">
+            <div class="card">
+                <h2>System Information</h2>
+                <p style="color: var(--muted-slate); line-height: 1.6;">
+                    <strong>API Endpoints Connected:</strong><br>
+                    Products: http://localhost:8080/api/products<br>
+                    Users: http://localhost:8080/api/users<br>
+                    Orders: http://localhost:8080/api/orders<br>
+                    <br>
+                    <em>Note: Advanced store configuration, database backups, and payment gateway webhooks will be available in the upcoming v2.0 release.</em>
+                </p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ADMIN LOGIC CONTROLLER -->
+    <script>
+        // 1. SECURITY & INITIALIZATION
+        const API_PRODUCTS_URL = 'http://localhost:8080/api/products';
+        const API_USERS_URL = 'http://localhost:8080/api/users';
+        const API_ORDERS_URL = 'http://localhost:8080/api/orders';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const sessionData = localStorage.getItem('sessionUser');
+            if (!sessionData) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            const user = JSON.parse(sessionData);
+            if (user.role !== 'ADMIN') {
+                alert("ACCESS DENIED: Administrator privileges required.");
+                window.location.href = 'index.html';
+                return;
+            }
+
+            document.getElementById('adminNameDisplay').innerText = `Admin: ${user.name || user.email}`;
+            
+            // Load initial data
+            loadInventory();
+            loadUsers();
+            loadOrders();
+        });
+
+        // 2. UI UTILITIES
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast show ${isError ? 'error' : ''}`;
+            setTimeout(() => toast.className = 'toast', 3500);
+        }
+
+        function executeSystemLogout() {
+            if(confirm("Securely end admin session?")) {
+                localStorage.removeItem('sessionUser');
+                window.location.href = 'login.html';
+            }
+        }
+
+        function switchTab(tabName) {
+            // Update Active Menu Item
+            document.querySelectorAll('.nav-menu li').forEach(li => li.classList.remove('active'));
+            document.getElementById(`nav-${tabName}`).classList.add('active');
+
+            // Hide all sections, show target
+            document.querySelectorAll('.dashboard-section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(`${tabName}-section`).classList.add('active');
+
+            // Update Page Title
+            const titles = { 'products': 'Product Inventory', 'users': 'User Management', 'orders': 'Order Management', 'settings': 'System Settings' };
+            document.getElementById('pageTitle').innerText = titles[tabName];
+        }
+
+        // ==========================================
+        // PRODUCT MANAGEMENT LOGIC
+        // ==========================================
+        async function loadInventory() {
+            try {
+                const response = await fetch(API_PRODUCTS_URL);
+                if(!response.ok) throw new Error("Failed to connect to database");
+                const products = await response.json();
+                
+                const tbody = document.getElementById('inventoryTableBody');
+                tbody.innerHTML = '';
+
+                products.forEach(p => {
+                    const imageUrl = p.imageUrl || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100';
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><img src="${imageUrl}" alt="product" onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100'"></td>
+                            <td style="color:#64748b; font-weight:600;">#${p.id}</td>
+                            <td><strong>${p.name}</strong></td>
+                            <td style="color:var(--success-green); font-weight:bold;">₹${p.price}</td>
+                            <td>${p.quantity} units</td>
+                            <td>
+                                <button class="danger" style="padding: 6px 12px; font-size:12px;" onclick="deleteProduct(${p.id})">Purge</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (error) {
+                console.error(error);
+                showToast("Failed to load products. Is Spring Boot running?", true);
+            }
+        }
+
+        document.getElementById('addProductForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            btn.innerText = "Saving...";
+            
+            const newProduct = {
+                name: document.getElementById('pName').value,
+                price: parseFloat(document.getElementById('pPrice').value),
+                quantity: parseInt(document.getElementById('pQuantity').value),
+                imageUrl: document.getElementById('pImageUrl').value,
+                description: document.getElementById('pDesc').value
+            };
+
+            try {
+                const response = await fetch(API_PRODUCTS_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newProduct)
+                });
+
+                if (response.ok) {
+                    showToast("Product successfully added to database!");
+                    e.target.reset();
+                    loadInventory();
+                } else {
+                    throw new Error("Validation rejected by server");
+                }
+            } catch (error) {
+                showToast(error.message, true);
+            } finally {
+                btn.innerText = "Create Product";
+            }
+        });
+
+        async function deleteProduct(productId) {
+            if (!confirm(`WARNING: Permanently delete Product #${productId} from the database?`)) return;
+
+            try {
+                const response = await fetch(`${API_PRODUCTS_URL}/${productId}`, { method: 'DELETE' });
+                if (response.ok) {
+                    showToast(`Product #${productId} deleted.`);
+                    loadInventory();
+                } else {
+                    throw new Error("Could not delete product.");
+                }
+            } catch (error) {
+                showToast(error.message, true);
+            }
+        }
+
+        // ==========================================
+        // USER MANAGEMENT LOGIC
+        // ==========================================
+        async function loadUsers() {
+            try {
+                const response = await fetch(API_USERS_URL);
+                if(!response.ok) {
+                    document.getElementById('usersTableBody').innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Failed to load users. Verify GET /api/users endpoint exists.</td></tr>`;
+                    return;
+                }
+                const users = await response.json();
+                
+                const tbody = document.getElementById('usersTableBody');
+                tbody.innerHTML = '';
+
+                users.forEach(u => {
+                    const roleClass = u.role === 'ADMIN' ? 'role-admin' : 'role-customer';
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="color:#64748b; font-weight:600;">#${u.id}</td>
+                            <td><strong>${u.name}</strong></td>
+                            <td>${u.email}</td>
+                            <td><span class="role-badge ${roleClass}">${u.role}</span></td>
+                            <td>
+                                <button class="danger" style="padding: 6px 12px; font-size:12px;" onclick="deleteUser(${u.id})">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (error) {
+                console.error("Error loading users:", error);
+            }
+        }
+
+        async function deleteUser(userId) {
+            // Prevent deleting the active session admin
+            const currentAdmin = JSON.parse(localStorage.getItem('sessionUser'));
+            if (currentAdmin.id === userId) {
+                showToast("Action Denied: You cannot delete your own admin account.", true);
+                return;
+            }
+
+            if (!confirm(`Are you absolutely sure you want to delete User #${userId}? This action cannot be undone.`)) return;
+
+            try {
+                const response = await fetch(`${API_USERS_URL}/${userId}`, { method: 'DELETE' });
+                if (response.ok) {
+                    showToast(`User #${userId} successfully removed.`);
+                    loadUsers();
+                } else {
+                    throw new Error("Backend rejected user deletion.");
+                }
+            } catch (error) {
+                showToast(error.message, true);
+            }
+        }
+
+        // ==========================================
+        // ORDER MANAGEMENT LOGIC
+        // ==========================================
+        async function loadOrders() {
+            try {
+                const response = await fetch(API_ORDERS_URL);
+                if(!response.ok) {
+                    document.getElementById('ordersTableBody').innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Failed to load orders.</td></tr>`;
+                    return;
+                }
+                const orders = await response.json();
+                
+                const tbody = document.getElementById('ordersTableBody');
+                tbody.innerHTML = '';
+
+                // Sort newest first
+                orders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
+
+                orders.forEach(o => {
+                    const dateObj = new Date(o.orderDate);
+                    const formattedDate = dateObj.toLocaleString('en-IN', {
+                        year: 'numeric', month: 'short', day: 'numeric',
+                        hour: '2-digit', minute: '2-digit'
+                    });
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="color:#64748b; font-weight:600;">#${o.id}</td>
+                            <td>User #${o.userId}</td>
+                            <td>${formattedDate}</td>
+                            <td style="color:var(--success-green); font-weight:bold;">₹${o.totalAmount}</td>
+                            <td><span class="role-badge role-admin">PAID</span></td>
+                        </tr>
+                    `;
+                });
+            } catch (error) {
+                console.error("Error loading orders:", error);
+            }
+        }
+    </script>
+</body>
+</html>

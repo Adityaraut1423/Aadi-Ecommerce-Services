@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aadi Store | Premium Electronics & Fashion</title>
+
+    <style>
+        /* GLOBAL STYLES */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: #f5f7fb;
+            color: #334155;
+        }
+
+        /* NAVBAR */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: #1e3a8a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 60px;
+            box-shadow: 0 3px 10px rgba(0,0,0,.3);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo {
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .search-box {
+            display: flex;
+            width: 350px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            outline: none;
+            border-radius: 5px 0 0 5px;
+        }
+
+        .search-box button {
+            border: none;
+            padding: 12px 18px;
+            cursor: pointer;
+            background: #38bdf8;
+            color: white;
+            border-radius: 0 5px 5px 0;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            align-items: center;
+        }
+
+        nav ul li {
+            margin-left: 20px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            transition: .3s;
+        }
+
+        nav ul li a:hover {
+            background: #2563eb;
+        }
+
+        /* HERO */
+        .hero {
+            height: 90vh;
+            background: linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.55)), url("https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1600");
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 70px;
+        }
+
+        .hero p {
+            margin: 20px 0;
+            font-size: 24px;
+        }
+
+        .hero button {
+            padding: 16px 40px;
+            border: none;
+            border-radius: 30px;
+            font-size: 18px;
+            cursor: pointer;
+            background: #2563eb;
+            color: white;
+            transition: .3s;
+        }
+
+        .hero button:hover {
+            background: #1d4ed8;
+            transform: scale(1.05);
+        }
+
+        /* CATEGORIES & GENERAL TITLES */
+        .title {
+            text-align: center;
+            margin: 60px 0 30px;
+            font-size: 40px;
+            color: #1e3a8a;
+        }
+
+        .categories {
+            width: 90%;
+            margin: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+        }
+
+        .category {
+            background: white;
+            padding: 35px;
+            text-align: center;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,.1);
+            transition: .3s;
+            cursor: pointer;
+        }
+
+        .category:hover {
+            transform: translateY(-10px);
+            background: #2563eb;
+            color: white;
+        }
+
+        .category .emoji {
+            font-size: 50px;
+        }
+
+        .category h3 {
+            margin-top: 15px;
+        }
+
+        /* PRODUCTS */
+        .products {
+            width: 90%;
+            margin: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,.15);
+            transition: .4s;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+        }
+
+        .card img {
+            width: 100%;
+            height: 230px;
+            object-fit: cover;
+            transition: .4s;
+        }
+
+        .card:hover img {
+            transform: scale(1.08);
+        }
+
+        .badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: red;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            z-index: 10;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .card h3 {
+            padding: 15px 15px 5px 15px;
+        }
+
+        .card p {
+            padding: 0 15px;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .rating {
+            padding: 10px 15px 0 15px;
+            color: orange;
+        }
+
+        .price {
+            padding: 10px 15px;
+            color: #2563eb;
+            font-size: 25px;
+            font-weight: bold;
+        }
+
+        .card button {
+            width: calc(100% - 30px);
+            margin: 15px;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: #16a34a;
+            color: white;
+            cursor: pointer;
+            font-size: 17px;
+            transition: background 0.2s ease;
+        }
+
+        .card button:hover {
+            background: #15803d;
+        }
+
+        /* NEWSLETTER */
+        .newsletter {
+            background: #2563eb;
+            padding: 70px 20px;
+            margin-top: 60px;
+            text-align: center;
+            color: white;
+        }
+
+        .newsletter h2 {
+            font-size: 40px;
+            margin-bottom: 20px;
+        }
+
+        .newsletter p {
+            font-size: 20px;
+            margin-bottom: 25px;
+        }
+
+        .newsletter-box {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .newsletter input {
+            width: 350px;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .newsletter button {
+            padding: 15px 35px;
+            background: #16a34a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: .3s;
+        }
+
+        .newsletter button:hover {
+            background: #15803d;
+        }
+
+        /* WHY US, SERVICES, TESTIMONIALS */
+        .why-us, .services, .testimonials {
+            width: 90%;
+            margin: 40px auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+        }
+
+        .why-card, .service, .testimonial {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,.1);
+            transition: .3s;
+        }
+
+        .why-card:hover, .service:hover, .testimonial:hover {
+            transform: translateY(-8px);
+        }
+
+        .icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        .testimonial img {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            margin-bottom: 15px;
+            object-fit: cover;
+        }
+
+        .testimonial p {
+            margin-top: 15px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        /* CONTACT SECTION */
+        .contact-section {
+            width: 90%;
+            margin: 50px auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 35px;
+        }
+
+        .contact-info {
+            background: white;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,.12);
+        }
+
+        .contact-info h3 {
+            font-size: 30px;
+            margin-bottom: 15px;
+            color: #1e3a8a;
+        }
+
+        .contact-info p {
+            color: #555;
+            line-height: 1.7;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+            font-size: 18px;
+        }
+
+        .contact-item span {
+            font-size: 28px;
+        }
+
+        .contact-form {
+            background: white;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,.12);
+        }
+
+        .contact-form h3 {
+            margin-bottom: 20px;
+            font-size: 30px;
+            color: #1e3a8a;
+        }
+
+        .contact-form form {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .contact-form input, .contact-form textarea {
+            padding: 15px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+            transition: .3s;
+        }
+
+        .contact-form input:focus, .contact-form textarea:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 5px rgba(37,99,235,.4);
+        }
+
+        .contact-form button {
+            padding: 15px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: .3s;
+        }
+
+        .contact-form button:hover {
+            background: #1d4ed8;
+        }
+
+        /* MAP */
+        .map-section {
+            width: 90%;
+            margin: 40px auto 60px;
+        }
+
+        .map-section iframe {
+            width: 100%;
+            height: 450px;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,.15);
+        }
+
+        /* FOOTER */
+        .footer {
+            background: #0f172a;
+            color: white;
+            margin-top: 60px;
+            padding: 60px 30px 20px;
+        }
+
+        .footer-container {
+            width: 90%;
+            margin: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 35px;
+        }
+
+        .footer-box h3 {
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .footer-box p {
+            line-height: 1.8;
+            color: #cbd5e1;
+        }
+
+        .footer-box ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-box ul li {
+            margin: 12px 0;
+        }
+
+        .footer-box ul li a {
+            text-decoration: none;
+            color: #cbd5e1;
+            transition: .3s;
+        }
+
+        .footer-box ul li a:hover {
+            color: #38bdf8;
+            padding-left: 8px;
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .social-icons a {
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #1e293b;
+            border-radius: 50%;
+            text-decoration: none;
+            font-size: 22px;
+            transition: .3s;
+        }
+
+        .social-icons a:hover {
+            background: #2563eb;
+            transform: translateY(-5px);
+        }
+
+        .footer hr {
+            margin: 40px 0 20px;
+            border: none;
+            height: 1px;
+            background: #334155;
+        }
+
+        .copyright {
+            text-align: center;
+            font-size: 16px;
+            color: #94a3b8;
+        }
+
+        /* RESPONSIVE MEDIA QUERIES */
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+                padding: 15px 20px;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            nav ul {
+                flex-direction: column;
+                text-align: center;
+                width: 100%;
+            }
+
+            nav ul li {
+                margin: 8px 0;
+                margin-left: 0;
+            }
+
+            .hero h1 {
+                font-size: 42px;
+            }
+
+            .hero p {
+                font-size: 18px;
+            }
+
+            .contact-section {
+                grid-template-columns: 1fr;
+            }
+
+            .contact-form, .contact-info {
+                padding: 25px;
+            }
+
+            .map-section iframe {
+                height: 300px;
+            }
+
+            .footer {
+                text-align: center;
+            }
+
+            .social-icons {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <nav>
+            <div class="logo">Aadi Store</div>
+            <div class="search-box">
+                <input type="text" id="productSearch" placeholder="Search products..." aria-label="Search products">
+                <button type="button" aria-label="Submit Search">🔍</button>
+            </div>
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li><a href="products.html">Products</a></li>
+                <li><a href="cart.html">Cart</a></li>
+                <li><a href="orders.html">My Orders</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h1>Welcome To Aadi Store</h1>
+            <p>Best Deals • Best Products • Best Prices</p>
+            <button type="button">Shop Now</button>
+        </section>
+
+        <section aria-labelledby="cat-title">
+            <h2 id="cat-title" class="title">Shop By Category</h2>
+            <div class="categories">
+                <div class="category">
+                    <div class="emoji" role="img" aria-label="Smartphones">📱</div>
+                    <h3>Mobiles</h3>
+                </div>
+                <div class="category">
+                    <div class="emoji" role="img" aria-label="Laptops">💻</div>
+                    <h3>Laptops</h3>
+                </div>
+                <div class="category">
+                    <div class="emoji" role="img" aria-label="Smart Watches">⌚</div>
+                    <h3>Watches</h3>
+                </div>
+                <div class="category">
+                    <div class="emoji" role="img" aria-label="Headphones & accessories">🎧</div>
+                    <h3>Accessories</h3>
+                </div>
+            </div>
+        </section>
+
+        <section aria-labelledby="featured-title">
+            <h2 id="featured-title" class="title">Featured Products</h2>
+            <div class="products">
+                <!-- Products will be injected here dynamically -->
+            </div>
+        </section>
+
+        <!-- OFFER SECTION -->
+        <section aria-label="Promotional Mega Sale" style="background:#2563eb; color:white; padding:70px 20px; text-align:center; margin-top:40px;">
+            <h2 style="font-size:45px;">🔥 Mega Sale 2026 🔥</h2>
+            <p style="font-size:22px; margin:20px 0;">
+                Get up to <strong>70% OFF</strong> on Electronics, Fashion & Accessories
+            </p>
+            <button type="button" style="padding:15px 35px; border:none; border-radius:30px; background:#16a34a; color:white; font-size:18px; cursor:pointer;">
+                Shop Now
+            </button>
+        </section>
+
+        <!-- BRANDS -->
+        <section aria-labelledby="brands-title">
+            <h2 id="brands-title" class="title">Top Brands</h2>
+            <div class="categories">
+                <div class="category">
+                    <div class="emoji" role="img" aria-label="Apple">🍎</div>
+                    <h3>Apple</h3>
+                </div>
+                <div class="category">
+                    <div class="emoji" role="img" aria-label="Samsung">📱</div>
+                    <h3>Samsung</h3>
+                </div>
+                <div class="category">
+                    <div class="emoji" role="img" aria-label="Dell">💻</div>
+                    <h3>Dell</h3>
+                </div>
+                <div class="category">
+                    <div class="emoji" role="img" aria-label="Nike">👟</div>
+                    <h3>Nike</h3>
+                </div>
+            </div>
+        </section>
+
+        <!-- NEWSLETTER SECTION -->
+        <section class="newsletter" aria-labelledby="newsletter-title">
+            <h2 id="newsletter-title">📩 Subscribe to Our Newsletter</h2>
+            <p>Get the latest offers, new arrivals and exclusive discounts directly in your inbox.</p>
+            <form class="newsletter-box" id="newsletterForm">
+                <input type="email" placeholder="Enter your email address" required aria-label="Email address for newsletter">
+                <button type="submit">Subscribe</button>
+            </form>
+        </section>
+
+        <!-- WHY CHOOSE US -->
+        <section aria-labelledby="why-title">
+            <h2 id="why-title" class="title">Why Choose Aadi Store?</h2>
+            <div class="why-us">
+                <div class="why-card">
+                    <div class="icon" role="img" aria-label="Delivery Van">🚚</div>
+                    <h3>Free Delivery</h3>
+                    <p>Free delivery on eligible orders across India.</p>
+                </div>
+                <div class="why-card">
+                    <div class="icon" role="img" aria-label="Secure Padlock">🔒</div>
+                    <h3>Secure Payments</h3>
+                    <p>100% secure payment using UPI, Cards and Net Banking.</p>
+                </div>
+                <div class="why-card">
+                    <div class="icon" role="img" aria-label="Money Tag">💰</div>
+                    <h3>Best Prices</h3>
+                    <p>Competitive prices with amazing seasonal offers.</p>
+                </div>
+                <div class="why-card">
+                    <div class="icon" role="img" aria-label="Gold Star">⭐</div>
+                    <h3>Top Quality</h3>
+                    <p>We sell only trusted and genuine branded products.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SERVICES -->
+        <section aria-labelledby="services-title">
+            <h2 id="services-title" class="title">Our Services</h2>
+            <div class="services">
+                <div class="service">
+                    <div class="icon" role="img" aria-label="Shopping bag">🛍️</div>
+                    <h3>Online Shopping</h3>
+                    <p>Shop thousands of premium products from home.</p>
+                </div>
+                <div class="service">
+                    <div class="icon" role="img" aria-label="Package box">📦</div>
+                    <h3>Fast Delivery</h3>
+                    <p>Quick delivery with live order tracking.</p>
+                </div>
+                <div class="service">
+                    <div class="icon" role="img" aria-label="Return arrows">🔄</div>
+                    <h3>Easy Returns</h3>
+                    <p>Hassle-free returns within 7 days.</p>
+                </div>
+                <div class="service">
+                    <div class="icon" role="img" aria-label="Telephone support">☎️</div>
+                    <h3>24×7 Support</h3>
+                    <p>Friendly customer support whenever you need help.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TESTIMONIALS -->
+        <section aria-labelledby="testimonials-title">
+            <h2 id="testimonials-title" class="title">What Our Customers Say</h2>
+            <div class="testimonials">
+                <div class="testimonial">
+                    <img src="https://randomuser.me/api/portraits/men/12.jpg" alt="Rahul Sharma portrait review">
+                    <h3>Rahul Sharma</h3>
+                    <div class="rating" aria-label="5 stars rating">⭐⭐⭐⭐⭐</div>
+                    <p>"Amazing shopping experience. Fast delivery and genuine products. Highly recommended!"</p>
+                </div>
+                <div class="testimonial">
+                    <img src="https://randomuser.me/api/portraits/women/22.jpg" alt="Priya Patel portrait review">
+                    <h3>Priya Patel</h3>
+                    <div class="rating" aria-label="5 stars rating">⭐⭐⭐⭐⭐</div>
+                    <p>"Best prices and excellent customer support. Loved the quality."</p>
+                </div>
+                <div class="testimonial">
+                    <img src="https://randomuser.me/api/portraits/men/35.jpg" alt="Aditya Verma portrait review">
+                    <h3>Aditya Verma</h3>
+                    <div class="rating" aria-label="4 stars rating">⭐⭐⭐⭐☆</div>
+                    <p>"Great website with premium design. Will definitely shop again."</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTACT SECTION -->
+        <section aria-labelledby="contact-title" class="contact-section">
+            <div class="contact-info">
+                <h2 id="contact-title">Get In Touch</h2>
+                <p>We'd love to hear from you. Contact us anytime.</p>
+                <div class="contact-item">
+                    <span role="img" aria-label="Location Pin">📍</span>
+                    <p>Nagpur, Maharashtra, India</p>
+                </div>
+                <div class="contact-item">
+                    <span role="img" aria-label="Phone Handset">📞</span>
+                    <p>+91 98765 43210</p>
+                </div>
+                <div class="contact-item">
+                    <span role="img" aria-label="Envelope">📧</span>
+                    <p>support@aadistore.com</p>
+                </div>
+                <div class="contact-item">
+                    <span role="img" aria-label="Clock Dial">🕒</span>
+                    <p>Mon - Sat : 9:00 AM - 8:00 PM</p>
+                </div>
+            </div>
+
+            <div class="contact-form">
+                <h3>Send a Message</h3>
+                <form id="contactForm">
+                    <input type="text" placeholder="Your Name" required aria-label="Your name">
+                    <input type="email" placeholder="Your Email" required aria-label="Your email address">
+                    <input type="text" placeholder="Subject" required aria-label="Message subject">
+                    <textarea rows="6" placeholder="Write your message..." required aria-label="Message contents"></textarea>
+                    <button type="submit">Send Message</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- GOOGLE MAP -->
+        <section aria-labelledby="map-title" class="map-section">
+            <h2 id="map-title" class="title">Find Us</h2>
+            <iframe src="https://www.google.com/maps?q=Nagpur&output=embed" title="Google Map showing location of Nagpur, Maharashtra, India" loading="lazy" allowfullscreen></iframe>
+        </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-container">
+            <!-- Company -->
+            <div class="footer-box">
+                <h3>🛍 Aadi Store</h3>
+                <p>Aadi Store is your trusted online shopping destination for Electronics, Fashion, Accessories and much more.</p>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="footer-box">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">Products</a></li>
+                    <li><a href="#">Categories</a></li>
+                    <li><a href="#">Offers</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+
+            <!-- Support -->
+            <div class="footer-box">
+                <h3>Customer Support</h3>
+                <ul>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Track Order</a></li>
+                    <li><a href="#">Returns</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms & Conditions</a></li>
+                </ul>
+            </div>
+
+            <!-- Social -->
+            <div class="footer-box">
+                <h3>Follow Us</h3>
+                <div class="social-icons">
+                    <a href="#" aria-label="Facebook">📘</a>
+                    <a href="#" aria-label="Instagram">📷</a>
+                    <a href="#" aria-label="Twitter">🐦</a>
+                    <a href="#" aria-label="LinkedIn">💼</a>
+                    <a href="#" aria-label="YouTube">▶️</a>
+                </div>
+                <p style="margin-top:20px;">Email: support@aadistore.com</p>
+                <p>Phone: +91 98765 43210</p>
+            </div>
+        </div>
+        <hr>
+        <div class="copyright">
+            &copy; 2026 Aadi Store | Designed with ❤️ using HTML, CSS & JavaScript
+        </div>
+    </footer>
+
+    <!-- INTERACTION LOGIC ARCHITECTURE -->
+    <script>
+    // Setup Indian Rupee Currency Formatter
+    const currencyFormatter = new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 0
+    });
+
+    // Global cart counter for the homepage mockup
+    let cartCount = 0;
+
+    // Global function attached to the window so inline HTML onclick handlers can reach it
+    window.handleHomepageCartClick = function(productName) {
+        cartCount++;
+        alert(`🎉 ${productName} added to cart! Total items: ${cartCount}`);
+    };
+
+    // ==========================================
+    // DYNAMIC AUTHENTICATION NAVBAR ROUTINE
+    // ==========================================
+    function applySmartNavbar() {
+        const sessionData = localStorage.getItem('sessionUser');
+        const navList = document.querySelector('nav ul');
+        
+        if (sessionData && navList) {
+            // Parse the stored database profile
+            const activeUser = JSON.parse(sessionData);
+            
+            // Find the list item containing the 'Login' link
+            const navItems = navList.querySelectorAll('li');
+            let loginItem = null;
+            navItems.forEach(item => {
+                if (item.textContent.includes('Login')) {
+                    loginItem = item;
+                }
+            });
+
+            // Replace it with a personalized Logout button
+            if (loginItem) {
+                loginItem.innerHTML = `
+                    <a href="#" onclick="executeSystemLogout()" style="background: #ef4444; color: white;">
+                        Logout (${activeUser.name.split(' ')[0]})
+                    </a>
+                `;
+            }
+        }
+    }
+
+    // Secure logout execution
+    window.executeSystemLogout = function() {
+        if(confirm("Are you sure you want to end your secure session?")) {
+            localStorage.removeItem('sessionUser');
+            alert("Session terminated successfully.");
+            window.location.reload(); // Refresh the page to reset the navbar
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Run the dynamic navbar check immediately
+        applySmartNavbar();
+
+        // 1. Intercept Contact Form Submissions
+        document.getElementById('contactForm')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Thank you for getting in touch! We will get back to you shortly.');
+            e.target.reset();
+        });
+
+        // 2. Intercept Newsletter Submissions
+        document.getElementById('newsletterForm')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Subscription successful! Welcome to the Aadi Store circle.');
+            e.target.reset();
+        });
+
+        // 3. Dynamic Product Fetching Pipeline
+        const productsGridNode = document.querySelector('.products');
+        
+        if (productsGridNode) {
+            try {
+                // Fetch data from the Spring Boot backend
+                const response = await fetch('http://localhost:8080/api/products');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP Error: ${response.status}`);
+                }
+
+                const allProducts = await response.json();
+                
+                // Clear the hardcoded HTML products out of the container
+                productsGridNode.innerHTML = '';
+
+                // Grab the first 8 products to feature on the homepage
+                const featuredProducts = allProducts.slice(0, 8);
+
+                if (featuredProducts.length === 0) {
+                    productsGridNode.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: #64748b; font-size: 18px; padding: 40px;">No featured products are currently available in the database.</p>`;
+                    return;
+                }
+
+                // Loop through and build the cards dynamically
+                featuredProducts.forEach((product, index) => {
+                    const isAvailable = product.quantity > 0;
+                    const fallbackImage = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600';
+                    const imageSource = product.imageUrl && product.imageUrl.trim() !== '' ? product.imageUrl : fallbackImage;
+                    
+                    // Alternate badge styles just for visual flair on the homepage
+                    const badges = ['NEW', 'HOT', 'SALE', '-20%'];
+                    const badgeText = isAvailable ? badges[index % badges.length] : 'SOLD OUT';
+                    const badgeColor = isAvailable ? 'red' : '#94a3b8';
+                    
+                    const buttonStyles = isAvailable 
+                        ? '' 
+                        : 'background: #cbd5e1; cursor: not-allowed; box-shadow: none; color: #64748b;';
+
+                    // Inject HTML for each specific product
+                    productsGridNode.innerHTML += `
+                        <article class="card">
+                            <div class="badge" style="background: ${badgeColor};">${badgeText}</div>
+                            <img src="${imageSource}" alt="${product.name}" onerror="this.src='${fallbackImage}'">
+                            <h3>${product.name}</h3>
+                            <p>${product.description || 'Premium selection from our global catalog.'}</p>
+                            <div class="rating" aria-label="5 stars out of 5">⭐⭐⭐⭐⭐ (5.0)</div>
+                            <div class="price">${currencyFormatter.format(product.price)}</div>
+                            <button 
+                                class="add-to-cart-btn" 
+                                type="button" 
+                                style="${buttonStyles}"
+                                onclick="handleHomepageCartClick('${product.name.replace(/'/g, "\\'")}')" 
+                                ${isAvailable ? '' : 'disabled'}>
+                                ${isAvailable ? 'Add To Cart' : 'Out of Stock'}
+                            </button>
+                        </article>
+                    `;
+                });
+
+            } catch (error) {
+                console.error("Failed to load dynamic featured products:", error);
+                // The fallback logic handles visual failure gracefully.
+            }
+        }
+    });
+    </script>
+</body>
+</html>

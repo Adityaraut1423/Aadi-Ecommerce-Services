@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Checkout | Aadi Store</title>
+    <style>
+        :root {
+            --primary-blue: #1e3a8a;
+            --accent-blue: #2563eb;
+            --success-green: #16a34a;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --gray-bg: #f8fafc;
+            --card-bg: #ffffff;
+            --border-light: #e2e8f0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: var(--gray-bg); color: var(--text-dark); min-height: 100vh; display: flex; flex-direction: column; }
+
+        nav { background: var(--primary-blue); display: flex; justify-content: space-between; align-items: center; padding: 0 60px; height: 80px; }
+        .logo { color: white; font-size: 26px; font-weight: 800; text-decoration: none; }
+        
+        main { padding: 40px 60px; max-width: 800px; margin: 0 auto; width: 100%; flex: 1; }
+        h1 { margin-bottom: 30px; text-align: center; }
+
+        .checkout-card { background: var(--card-bg); padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border-light); }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: var(--text-muted); }
+        .form-group input { width: 100%; padding: 12px; border: 1px solid var(--border-light); border-radius: 6px; outline: none; }
+        .form-group input:focus { border-color: var(--accent-blue); }
+
+        .row { display: flex; gap: 20px; }
+        .row .form-group { flex: 1; }
+
+        .pay-btn { width: 100%; padding: 16px; background: var(--success-green); color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 10px; }
+        .pay-btn:hover { background: #15803d; }
+        .pay-btn:disabled { background: #cbd5e1; cursor: not-allowed; }
+
+        /* Success Overlay */
+        .success-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 2000; }
+        .modal-content { background: white; padding: 40px; border-radius: 16px; text-align: center; max-width: 400px; }
+        .modal-content h2 { color: var(--success-green); margin-bottom: 10px; }
+        .modal-content p { color: var(--text-muted); margin-bottom: 20px; }
+        .modal-btn { display: inline-block; padding: 12px 24px; background: var(--accent-blue); color: white; text-decoration: none; border-radius: 6px; font-weight: bold; }
+
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html" class="logo">Aadi Store | Secure Checkout</a>
+    </nav>
+
+    <main>
+        <h1>Complete Your Order</h1>
+        <div class="checkout-card">
+            <form id="checkoutForm">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="shipName" required>
+                </div>
+                <div class="form-group">
+                    <label>Shipping Address</label>
+                    <input type="text" id="shipAddress" required placeholder="123 Main St, Apartment 4B">
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <label>City</label>
+                        <input type="text" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Postal Code</label>
+                        <input type="text" required>
+                    </div>
+                </div>
+                
+                <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 25px 0;">
+                
+                <h3 style="margin-bottom: 15px; color: var(--text-dark);">Payment Information</h3>
+                <div class="form-group">
+                    <label>Card Number (Mock Data)</label>
+                    <input type="text" placeholder="1111-2222-3333-4444" required maxlength="19">
+                </div>
+                
+                <button type="submit" class="pay-btn" id="payBtn">Place Order</button>
+            </form>
+        </div>
+    </main>
+
+    <!-- Success Popup -->
+    <div class="success-modal" id="successModal">
+        <div class="modal-content">
+            <h2>🎉 Order Confirmed!</h2>
+            <p>Your payment was successful and your order is being processed.</p>
+            <a href="index.html" class="modal-btn">Return to Store</a>
+        </div>
+    </div>
+
+    <script>
+        const API_ORDERS_URL = 'http://localhost:8080/api/orders';
+
+        document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const sessionData = localStorage.getItem('sessionUser');
+            if (!sessionData) {
+                alert("Session expired. Please log in again.");
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const currentUser = JSON.parse(sessionData);
+            const btn = document.getElementById('payBtn');
+            btn.disabled = true;
+            btn.innerText = "Processing Payment...";
+
+            try {
+                // Send OrderRequest matching your DTO
+                const response = await fetch(API_ORDERS_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: currentUser.id })
+                });
+
+                if (response.ok) {
+                    // Show success popup
+                    document.getElementById('successModal').style.display = 'flex';
+                } else {
+                    const errorMsg = await response.text();
+                    throw new Error(errorMsg);
+                }
+            } catch (error) {
+                alert("Checkout Failed: " + error.message);
+                btn.disabled = false;
+                btn.innerText = "Place Order";
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Shopping Suite | Aadi Store</title>
+    <!-- Core UI Design Variables & Framework Setup -->
+    <style>
+        :root {
+            --primary-blue: #1e3a8a;
+            --accent-blue: #2563eb;
+            --sky-blue: #38bdf8;
+            --dark-slate: #0f172a;
+            --muted-slate: #334155;
+            --gray-cool: #f5f7fb;
+            --border-light: #cbd5e1;
+            --border-extra-light: #e2e8f0;
+            --text-muted: #64748b;
+            --success-green: #16a34a;
+            --success-hover: #15803d;
+            --danger-red: #ef4444;
+            --danger-light: #fee2e2;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.02);
+            --shadow-md: 0 5px 15px rgba(0,0,0,0.05);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.08);
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --transition-speed: 0.25s;
+        }
+
+        /* RESET ENGINE & FONTS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            height: 100%;
+        }
+
+        body {
+            background-color: var(--gray-cool);
+            color: var(--muted-slate);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        /* NOTIFICATION TOAST PLATFORM */
+        #notificationConsole {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 5000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 420px;
+            width: calc(100% - 48px);
+        }
+
+        .toast-banner {
+            background: white;
+            border-left: 4px solid var(--accent-blue);
+            padding: 16px 20px;
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideInRight var(--transition-speed) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            position: relative;
+        }
+
+        .toast-banner.success { border-left-color: var(--success-green); }
+        .toast-banner.danger { border-left-color: var(--danger-red); }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(120%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* NAVIGATION SUITE */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 2000;
+            background: var(--primary-blue);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 60px;
+            height: 80px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        .logo-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            color: white;
+            font-size: 26px;
+            font-weight: 800;
+            text-decoration: none;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-tag {
+            background: rgba(255,255,255,0.15);
+            color: var(--sky-blue);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 20px;
+            text-transform: uppercase;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            align-items: center;
+            height: 100%;
+        }
+
+        nav ul li {
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: rgba(255,255,255,0.8);
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-weight: 500;
+            font-size: 15px;
+            transition: all var(--transition-speed);
+        }
+
+        nav ul li a:hover {
+            color: white;
+            background: rgba(255,255,255,0.08);
+        }
+
+        nav ul li a.active {
+            background: var(--accent-blue);
+            color: white;
+            box-shadow: 0 4px 12px rgba(37,99,235,0.2);
+        }
+
+        /* CORE GRID AND LAYOUT */
+        main {
+            flex: 1;
+            width: 85%;
+            max-width: 1400px;
+            margin: 50px auto;
+        }
+
+        .cart-header-block {
+            margin-bottom: 36px;
+        }
+
+        .cart-title {
+            font-size: 32px;
+            color: var(--dark-slate);
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .breadcrumb-trail {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        .cart-container {
+            display: grid;
+            grid-template-columns: 2.2fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        /* SHIMMER EFFECT / LOADING INJECTOR */
+        .skeleton-loader {
+            background: white;
+            padding: 30px;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .skeleton-row {
+            height: 80px;
+            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+            background-size: 200% 100%;
+            animation: shimmerEffect 1.6s infinite linear;
+            border-radius: var(--radius-sm);
+        }
+
+        @keyframes shimmerEffect {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* DATA ROW STRUCTURES */
+        .cart-items {
+            background: white;
+            padding: 10px 30px;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-extra-light);
+        }
+
+        .cart-item {
+            display: grid;
+            grid-template-columns: 100px 2.5fr 1.2fr 1.2fr auto;
+            align-items: center;
+            gap: 24px;
+            padding: 24px 0;
+            border-bottom: 1px solid var(--border-extra-light);
+            transition: transform var(--transition-speed);
+        }
+
+        .cart-item:last-of-type {
+            border-bottom: none;
+        }
+
+        .cart-item img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-extra-light);
+            background-color: var(--gray-cool);
+        }
+
+        .item-details h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--dark-slate);
+            margin-bottom: 6px;
+        }
+
+        .item-details p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .item-price {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--dark-slate);
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            width: max-content;
+            background: var(--gray-cool);
+            overflow: hidden;
+        }
+
+        .quantity-controls button {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+            transition: background var(--transition-speed);
+        }
+
+        .quantity-controls button:hover {
+            background: var(--border-extra-light);
+        }
+
+        .quantity-controls span {
+            font-size: 15px;
+            font-weight: 700;
+            width: 40px;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .remove-btn {
+            background: transparent;
+            border: none;
+            color: var(--danger-red);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: var(--radius-sm);
+            transition: background var(--transition-speed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .remove-btn:hover {
+            background: var(--danger-light);
+        }
+
+        /* STATISTICAL MATH AGGREGATOR PANEL */
+        .cart-summary {
+            background: white;
+            padding: 35px;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-extra-light);
+            position: sticky;
+            top: 130px;
+        }
+
+        .summary-title {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 24px;
+            color: var(--dark-slate);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* VOUCHER / PROMO REDUCTION ENGINE */
+        .promo-container {
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border-extra-light);
+        }
+
+        .promo-input-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .promo-input-group input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            outline: none;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        .promo-input-group button {
+            padding: 12px 20px;
+            background: var(--dark-slate);
+            color: white;
+            border: none;
+            font-weight: 600;
+            font-size: 14px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: background var(--transition-speed);
+        }
+
+        .promo-input-group button:hover {
+            background: var(--muted-slate);
+        }
+
+        .promo-status-text {
+            font-size: 12px;
+            margin-top: 6px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .summary-row.total {
+            border-top: 2px dashed var(--border-light);
+            padding-top: 20px;
+            margin-top: 20px;
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--accent-blue);
+        }
+
+        .checkout-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--success-green);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 12px;
+            box-shadow: 0 4px 12px rgba(22,163,74,0.15);
+            transition: all var(--transition-speed);
+        }
+
+        .checkout-btn:hover {
+            background: var(--success-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(22,163,74,0.25);
+        }
+
+        .continue-shopping-anchor {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .continue-shopping-anchor:hover {
+            text-decoration: underline;
+        }
+
+        /* BLANK DISPLACEMENT COMPONENT */
+        .empty-cart {
+            text-align: center;
+            padding: 80px 40px;
+            background: white;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-extra-light);
+            display: none;
+        }
+
+        .empty-cart-icon {
+            font-size: 72px;
+            margin-bottom: 24px;
+            animation: floatIcon 3s ease-in-out infinite;
+            display: inline-block;
+        }
+
+        @keyframes floatIcon {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .empty-cart h2 {
+            font-size: 26px;
+            color: var(--dark-slate);
+            margin-bottom: 12px;
+            font-weight: 800;
+        }
+
+        .empty-cart p {
+            color: var(--text-muted);
+            margin-bottom: 30px;
+        }
+        
+        /* PAYMENT MODAL OVERLAY STYLES */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+        }
+        .modal-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .modal-card h3 { margin-bottom: 20px; color: #0f172a; font-size: 22px; }
+        .payment-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .payment-option:hover { border-color: #2563eb; background: #f8fafc; }
+
+        /* ARCHITECTURAL FOOTER CONTROLLER */
+        footer {
+            background: var(--dark-slate);
+            color: var(--text-muted);
+            padding: 30px 0;
+            text-align: center;
+            font-size: 14px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            margin-top: auto;
+        }
+
+        /* RESPONSIVE CSS STACK RULES */
+        @media (max-width: 1024px) {
+            .cart-container { grid-template-columns: 1fr; gap: 30px; }
+            .cart-summary { position: static; }
+            main { width: 92%; }
+            nav { padding: 0 30px; }
+        }
+
+        @media (max-width: 680px) {
+            .cart-item {
+                grid-template-columns: 80px 1fr;
+                gap: 16px;
+                position: relative;
+            }
+            .cart-item img { grid-row: span 3; width: 80px; height: 80px; }
+            .item-price, .quantity-controls, .remove-btn { grid-column: 2; }
+            .remove-btn { position: absolute; top: 16px; right: 0; }
+            nav { padding: 15px; height: auto; flex-direction: column; }
+            nav ul { margin-top: 15px; flex-wrap: wrap; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- STACK NOTIFICATION CONTAINER LAYER -->
+    <div id="notificationConsole" role="live-log"></div>
+
+    <header>
+        <nav role="navigation" aria-label="Main Navigation Context">
+            <div class="logo-wrapper">
+                <a href="index.html" class="logo">Aadi Store</a>
+                <span class="logo-tag">Enterprise</span>
+            </div>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="products.html">Products</a></li>
+                <li><a href="cart.html" class="active">Cart</a></li>
+                <li><a href="orders.html">My Orders</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main id="appViewScope">
+        <div class="cart-header-block">
+            <h1 class="cart-title">Your Management Cart</h1>
+            <div class="breadcrumb-trail">Storefront / Catalog / Order Distribution Cart Console</div>
+        </div>
+
+        <!-- ASYNC BUFFER LAYER SHIMMER GRID -->
+        <div id="shimmerInstance" class="skeleton-loader">
+            <div class="skeleton-row"></div>
+            <div class="skeleton-row"></div>
+            <div class="skeleton-row"></div>
+        </div>
+
+        <!-- SYSTEM TARGET DATA GRID CONTAINER CONTAINER -->
+        <div class="cart-container" id="cartContent" style="display: none;">
+            <!-- Main Grid Execution Injections Node Target -->
+            <section class="cart-items" id="itemsContainerList" aria-label="Current Shopping Items List"></section>
+
+            <!-- Checkout Metric Summary Aside Card -->
+            <aside class="cart-summary" aria-label="Financial Summary Context">
+                <h2 class="summary-title">Order Summary</h2>
+                
+                <!-- PROMO ENGINE SUB-MODULE FIELDSET -->
+                <div class="promo-container">
+                    <label for="promoCodeField" style="font-size: 13px; font-weight:700; color:var(--dark-slate);">Have a Promotion Token / Voucher?</label>
+                    <div class="promo-input-group">
+                        <input type="text" id="promoCodeField" placeholder="Enter Token (e.g. AADI10)" aria-label="Promo Code">
+                        <button type="button" onclick="PromoSystemEngine.applyTokenReduction()">Apply</button>
+                    </div>
+                    <div id="promoStatusMessage" class="promo-status-text"></div>
+                </div>
+
+                <div class="summary-row">
+                    <span>Price Subtotal (<span id="totalItemsCount">0</span> allocations)</span>
+                    <span id="subtotalCost">₹0</span>
+                </div>
+                <div class="summary-row" id="couponDeductionRow" style="display: none; color: var(--danger-red); font-weight: 600;">
+                    <span>Voucher Reward Applied</span>
+                    <span id="couponDeductionVal">-₹0</span>
+                </div>
+                <div class="summary-row">
+                    <span>Logistics Distribution</span>
+                    <span style="color: var(--success-green); font-weight: 800;">FREE COMPLIANT</span>
+                </div>
+                <div class="summary-row">
+                    <span>GST Statutory Assessment (18%)</span>
+                    <span id="taxCost">₹0</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Gross Amount</span>
+                    <span id="finalTotal">₹0</span>
+                </div>
+                
+                <button type="button" class="checkout-btn" onclick="CheckoutPipelineManager.executeTransactionTunnel()">
+                    Proceed to Safe Checkout System
+                </button>
+                <a href="products.html" class="continue-shopping-anchor">← Return to Product Catalog System</a>
+            </aside>
+        </div>
+
+        <!-- SEED FALLBACK LAYOUT PLATFORM NODE TARGET -->
+        <section class="empty-cart" id="emptyCartState">
+            <div class="empty-cart-icon">🛒</div>
+            <h2>Active Cart Memory Cache Empty</h2>
+            <p>We detected zero live item allocation mappings assigned to this user context index inside the database.</p>
+            <a href="products.html" class="checkout-btn" style="text-decoration: none; display: inline-block; width: auto; padding: 16px 40px;">
+                Initialize Product Discovery Operations
+            </a>
+        </section>
+    </main>
+    
+    <!-- PAYMENT METHOD SELECTION MODAL -->
+    <div class="modal-overlay" id="paymentModal">
+        <div class="modal-card">
+            <h3>Select Payment Method</h3>
+            <label class="payment-option">
+                <input type="radio" name="paymentMethod" value="UPI" checked> 📱 UPI (Google Pay / PhonePe / Paytm)
+            </label>
+            <label class="payment-option">
+                <input type="radio" name="paymentMethod" value="Credit/Debit Card"> 💳 Credit / Debit Card
+            </label>
+            <label class="payment-option">
+                <input type="radio" name="paymentMethod" value="Cash on Delivery"> 💵 Cash on Delivery (COD)
+            </label>
+            <button type="button" class="checkout-btn" onclick="CheckoutPipelineManager.confirmAndSubmitOrder()" style="margin-top: 15px;">
+                Confirm & Place Order
+            </button>
+            <button type="button" onclick="document.getElementById('paymentModal').style.display='none'" style="width:100%; margin-top:10px; background:none; border:none; color:#64748b; cursor:pointer; font-weight:600;">
+                Cancel
+            </button>
+        </div>
+    </div>
+
+    <footer>
+        <div style="max-width: 1400px; margin: 0 auto; width: 85%;">
+            &copy; 2026 Aadi Store Integration Engines. All technical interfaces secure and operational.
+        </div>
+    </footer>
+
+    <!-- DYNAMIC SYSTEM PROGRAM CONTROL INTERFACES ENGINE -->
+    <script>
+        /**
+         * GLOBAL CONSTANTS & LAYER PARAMETERS SCHEMA CONFIGURATIONS
+         */
+        const SystemCoreConfig = {
+            endpoints: {
+                baseCartUrl: 'http://localhost:8080/api/cart'
+            },
+            taxRateMetric: 0.18,
+            fallbackUserIndex: 1,
+            currencyFormattingSignature: 'en-IN',
+            currencyISOCode: 'INR'
+        };
+
+        // Cache session profile structures directly out of internal tracking registers
+        const activeProfileContext = JSON.parse(localStorage.getItem('sessionUser'));
+        const CURRENT_OPERATIONAL_USER_ID = activeProfileContext ? activeProfileContext.id : SystemCoreConfig.fallbackUserIndex;
+
+        // Internal transactional mutable state tracking structure
+        let cartStateArrayRegister = [];
+
+        // Formatting service engine instantiation configuration rules mapping setup
+        const currencyConverterPipeline = new Intl.NumberFormat(SystemCoreConfig.currencyFormattingSignature, {
+            style: 'currency',
+            currency: SystemCoreConfig.currencyISOCode,
+            maximumFractionDigits: 0
+        });
+
+        /**
+         * SYSTEM ALERT AND TOAST FEEDBACK PLATFORM LOGGER
+         */
+        const ToastSystemNotifier = {
+            trigger: function(messageTextString, configurationClassType = 'success') {
+                const logsRootNode = document.getElementById('notificationConsole');
+                const elementContainer = document.createElement('div');
+                elementContainer.className = `toast-banner ${configurationClassType}`;
+                
+                elementContainer.innerHTML = `
+                    <span style="font-size:14px; font-weight:600;">${messageTextString}</span>
+                    <span style="cursor:pointer; margin-left:15px; font-size:12px; opacity:0.6;" onclick="this.parentElement.remove()">✕</span>
+                `;
+                
+                logsRootNode.appendChild(elementContainer);
+                setTimeout(() => { if (elementContainer) elementContainer.remove(); }, 4000);
+            }
+        };
+
+        /**
+         * ASYNC DATA ROUTER SERVICE WORKER WRAPPER METHOD ENGINE
+         */
+        async function fetchCartDataFromBackend() {
+            const dataLayerLoaderNode = document.getElementById('shimmerInstance');
+            const systemRenderLayoutNode = document.getElementById('cartContent');
+            const fallbackLayoutNode = document.getElementById('emptyCartState');
+
+            try {
+                const targetRestEndpoint = `${SystemCoreConfig.endpoints.baseCartUrl}/user/${CURRENT_OPERATIONAL_USER_ID}`;
+                const fetchTransactionResponse = await fetch(targetRestEndpoint);
+                
+                if (!fetchTransactionResponse.ok) {
+                    throw new Error(`HTTP System Error Code Pipeline Exception Triggered: Status code ${fetchTransactionResponse.status}`);
+                }
+
+                cartStateArrayRegister = await fetchTransactionResponse.json();
+                dataLayerLoaderNode.style.display = 'none';
+                
+                ExecutionRenderEngine.renderInterfaceComponents();
+            } catch (networkCallError) {
+                console.error("System Interface Pipeline Failure Exception Details:", networkCallError);
+                dataLayerLoaderNode.style.display = 'none';
+                systemRenderLayoutNode.style.display = 'none';
+                fallbackLayoutNode.style.display = 'none';
+
+                const targetAppScopeContainer = document.getElementById('appViewScope');
+                targetAppScopeContainer.innerHTML += `
+                    <div class="empty-cart" style="display:block; border-color:var(--danger-red);">
+                        <div class="empty-cart-icon" style="color:var(--danger-red)">⚠️</div>
+                        <h2>Backend Data Interface Blockage</h2>
+                        <p style="max-width:600px; margin:0 auto 24px;">Failed to verify an active data pipeline connection channel to the Spring Boot microservice environment running at port 8080. Confirm target entity structure parameters match data payloads mapping instructions.</p>
+                        <button onclick="window.location.reload()" class="checkout-btn" style="width:auto; padding:12px 30px; background:var(--dark-slate)">Reinitialize Connection Routine</button>
+                    </div>
+                `;
+            }
+        }
+
+        /**
+         * INTERFACE ELEMENT INJECTION PARSER DOM PROCESSOR ENGINE
+         */
+        const ExecutionRenderEngine = {
+            renderInterfaceComponents: function() {
+                const injectionListTargetNode = document.getElementById('itemsContainerList');
+                const gridLayoutRootContainer = document.getElementById('cartContent');
+                const emptyDataStatePanelNode = document.getElementById('emptyCartState');
+
+                if (!cartStateArrayRegister || cartStateArrayRegister.length === 0) {
+                    gridLayoutRootContainer.style.display = 'none';
+                    emptyDataStatePanelNode.style.display = 'block';
+                    return;
+                }
+
+                emptyDataStatePanelNode.style.display = 'none';
+                gridLayoutRootContainer.style.display = 'grid';
+                injectionListTargetNode.innerHTML = '';
+
+                cartStateArrayRegister.forEach(cartItemRowRecord => {
+                    // DYNAMIC DATA MAPPING SOLUTION: Pulls dynamic product graphic URLs directly out of your MySQL data tables payload structures
+                    const processedDynamicImageString = cartItemRowRecord.imageUrl && cartItemRowRecord.imageUrl.trim() !== '' 
+                        ? cartItemRowRecord.imageUrl 
+                        : 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200';
+
+                    injectionListTargetNode.innerHTML += `
+                        <article class="cart-item" id="cart-item-wrapper-row-${cartItemRowRecord.id}">
+                            <img src="${processedDynamicImageString}" alt="${cartItemRowRecord.productName}" onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200'">
+                            <div class="item-details">
+                                <h3>${cartItemRowRecord.productName}</h3>
+                                <p>SQL Primary Ident Key: #${cartItemRowRecord.id}</p>
+                                <p style="margin-top:2px;">Product Master Index Reference: #${cartItemRowRecord.productId}</p>
+                            </div>
+                            <div class="item-price">${currencyConverterPipeline.format(cartItemRowRecord.price)}</div>
+                            <div class="quantity-controls">
+                                <button type="button" aria-label="Decrement item quantity" onclick="TransactionalStateMutationEngine.modifyQuantityAllocation(${cartItemRowRecord.id}, ${cartItemRowRecord.productId}, -1)">-</button>
+                                <span id="display-quantity-metric-field-${cartItemRowRecord.id}">${cartItemRowRecord.quantity}</span>
+                                <button type="button" aria-label="Increment item quantity" onclick="TransactionalStateMutationEngine.modifyQuantityAllocation(${cartItemRowRecord.id}, ${cartItemRowRecord.productId}, 1)">+</button>
+                            </div>
+                            <button class="remove-btn" type="button" aria-label="Purge allocation row record" onclick="TransactionalStateMutationEngine.executeDeletionCallRoutine(${cartItemRowRecord.id})">
+                                🗑️
+                            </button>
+                        </article>
+                    `;
+                });
+
+                this.recalculateFinancialAggregations();
+            },
+
+            recalculateFinancialAggregations: function() {
+                let financialSubtotalAccumulator = 0;
+                let aggregateQuantityMetricsTracker = 0;
+
+                cartStateArrayRegister.forEach(itemStateReferenceObject => {
+                    financialSubtotalAccumulator += (itemStateReferenceObject.price * itemStateReferenceObject.quantity);
+                    aggregateQuantityMetricsTracker += itemStateReferenceObject.quantity;
+                });
+
+                // Read voucher modifier values out of state memory parameters
+                const computedDeductionValue = PromoSystemEngine.calculateDeductionAmount(financialSubtotalAccumulator);
+                const postDeductionSubtotal = Math.max(0, financialSubtotalAccumulator - computedDeductionValue);
+                
+                const statutoryTaxesCalculation = Math.round(postDeductionSubtotal * SystemCoreConfig.taxRateMetric);
+                const finalGrossAggregatedTotal = postDeductionSubtotal + statutoryTaxesCalculation;
+
+                // Bind computational text fields to UI targets
+                document.getElementById('totalItemsCount').textContent = aggregateQuantityMetricsTracker;
+                document.getElementById('subtotalCost').textContent = currencyConverterPipeline.format(financialSubtotalAccumulator);
+                document.getElementById('taxCost').textContent = currencyConverterPipeline.format(statutoryTaxesCalculation);
+                document.getElementById('finalTotal').textContent = currencyConverterPipeline.format(finalGrossAggregatedTotal);
+
+                const discountUIFieldContainer = document.getElementById('couponDeductionRow');
+                const discountValueUIField = document.getElementById('couponDeductionVal');
+
+                if (computedDeductionValue > 0) {
+                    discountUIFieldContainer.style.display = 'flex';
+                    discountValueUIField.textContent = `-${currencyConverterPipeline.format(computedDeductionValue)}`;
+                } else {
+                    discountUIFieldContainer.style.display = 'none';
+                }
+            }
+        };
+
+        /**
+         * TRANSACTIONAL LAYER OPERATIONS ENGINE (CREATE, UPDATE, DELETE ROUTINES)
+         */
+        const TransactionalStateMutationEngine = {
+            modifyQuantityAllocation: async function(cartTableRowKeyIndex, physicalProductMasterKey, directionalDeltaValue) {
+                const targetLocalStateObject = cartStateArrayRegister.find(recordReference => recordReference.id === cartTableRowKeyIndex);
+                if (!targetLocalStateObject) return;
+
+                const tentativeQuantityOutcome = targetLocalStateObject.quantity + directionalDeltaValue;
+
+                if (tentativeQuantityOutcome < 1) {
+                    this.executeDeletionCallRoutine(cartTableRowKeyIndex);
+                    return;
+                }
+
+                try {
+                    const transactionalMutationEndpoint = `${SystemCoreConfig.endpoints.baseCartUrl}/add`;
+                    const networkPayloadDispatchResponse = await fetch(transactionalMutationEndpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userId: CURRENT_OPERATIONAL_USER_ID,
+                            productId: physicalProductMasterKey,
+                            quantity: directionalDeltaValue
+                        })
+                    });
+
+                    if (!networkPayloadDispatchResponse.ok) {
+                        throw new Error("Spring Boot transaction processor rejected mutation schema validation rules.");
+                    }
+
+                    targetLocalStateObject.quantity = tentativeQuantityOutcome;
+                    
+                    document.getElementById(`display-quantity-metric-field-${cartTableRowKeyIndex}`).textContent = tentativeQuantityOutcome;
+                    ExecutionRenderEngine.recalculateFinancialAggregations();
+                    
+                    ToastSystemNotifier.trigger("System data tables modified successfully.", "success");
+                } catch (dataMutationNetworkError) {
+                    console.error("Mutation task process anomaly caught:", dataMutationNetworkError);
+                    ToastSystemNotifier.trigger("Failed to persist database quantity adjustment operations.", "danger");
+                }
+            },
+
+            executeDeletionCallRoutine: async function(cartItemRowDeletionIndexKey) {
+                // Keep the confirmation pop up for deletion logic intact!
+                if (!confirm("Are you sure you want to drop this allocation item row from your active relational SQL schema table records?")) return;
+
+                try {
+                    const transactionalPurgeEndpoint = `${SystemCoreConfig.endpoints.baseCartUrl}/${cartItemRowDeletionIndexKey}`;
+                    const networkDeletionExecutionResponse = await fetch(transactionalPurgeEndpoint, {
+                        method: 'DELETE'
+                    });
+
+                    if (!networkDeletionExecutionResponse.ok) {
+                        throw new Error("Spring Boot relational tables orchestrator returned an internal execution fault.");
+                    }
+
+                    // Mutate internal state cache tracking engine arrays values matching data layer drop triggers
+                    cartStateArrayRegister = cartStateArrayRegister.filter(record => record.id !== cartItemRowDeletionIndexKey);
+                    
+                    ExecutionRenderEngine.renderInterfaceComponents();
+                    ToastSystemNotifier.trigger("Relational row record successfully purged from table arrays.", "success");
+                } catch (deletionNetworkFaultError) {
+                    console.error("Purge routine system network failure processing error caught:", deletionNetworkFaultError);
+                    ToastSystemNotifier.trigger("Failed to execute database entity record deletion process script.", "danger");
+                }
+            }
+        };
+
+        /**
+         * VOUCHER AND TOKEN DEDUCTION PROMOTIONS SUB-SYSTEM LAYER MODULE ENGINE
+         */
+        const PromoSystemEngine = {
+            activeAppliedCouponTokenState: null,
+            registeredTokensReferenceIndex: {
+                'AADI10': 0.10,
+                'SPRINGBOOT': 0.15,
+                'ECOM2026': 0.20
+            },
+
+            applyTokenReduction: function() {
+                const rawInputString = document.getElementById('promoCodeField').value.toUpperCase().trim();
+                const statusMessageUINode = document.getElementById('promoStatusMessage');
+
+                if (rawInputString === '') {
+                    statusMessageUINode.style.display = 'block';
+                    statusMessageUINode.style.color = 'var(--danger-red)';
+                    statusMessageUINode.textContent = 'Token field input register blank.';
+                    return;
+                }
+
+                if (this.registeredTokensReferenceIndex.hasOwnProperty(rawInputString)) {
+                    this.activeAppliedCouponTokenState = rawInputString;
+                    statusMessageUINode.style.display = 'block';
+                    statusMessageUINode.style.color = 'var(--success-green)';
+                    statusMessageUINode.textContent = `Token successfully verified! Code applied: (${this.registeredTokensReferenceIndex[rawInputString] * 100}% baseline subtotal reduction)`;
+                    
+                    ExecutionRenderEngine.recalculateFinancialAggregations();
+                    ToastSystemNotifier.trigger("Promo deduction layer verified and bound to active checkouts metrics.", "success");
+                } else {
+                    statusMessageUINode.style.display = 'block';
+                    statusMessageUINode.style.color = 'var(--danger-red)';
+                    statusMessageUINode.textContent = 'Invalid configuration signature matching criteria or token expired.';
+                }
+            },
+
+            calculateDeductionAmount: function(currentSubtotalAggregateCost) {
+                if (!this.activeAppliedCouponTokenState) return 0;
+                const targetingDiscountRatioScaleMultiplier = this.registeredTokensReferenceIndex[this.activeAppliedCouponTokenState];
+                return Math.round(currentSubtotalAggregateCost * targetingDiscountRatioScaleMultiplier);
+            }
+        };
+
+        /**
+         * TRANSACTION FINALIZATION AND SERVICE DISPATCHING ROUTERS ARCHITECTURE
+         */
+        const CheckoutPipelineManager = {
+            executeTransactionTunnel: function() {
+                if (!cartStateArrayRegister || cartStateArrayRegister.length === 0) {
+                    ToastSystemNotifier.trigger("Aborting tunnel route execution. Active payload data arrays register empty.", "danger");
+                    return;
+                }
+                
+                // POP THE MODAL OPEN
+                document.getElementById('paymentModal').style.display = 'flex';
+            },
+
+            confirmAndSubmitOrder: async function() {
+                const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+                document.getElementById('paymentModal').style.display = 'none';
+
+                ToastSystemNotifier.trigger(`Processing payment via ${selectedMethod}...`, 'success');
+
+                try {
+                    const response = await fetch('http://localhost:8080/api/orders', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userId: CURRENT_OPERATIONAL_USER_ID,
+                            paymentMethod: selectedMethod
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errText = await response.text();
+                        throw new Error(errText || "Order execution failed.");
+                    }
+
+                    const orderResult = await response.json();
+                    ToastSystemNotifier.trigger("🎉 Order placed successfully! Thank you for shopping with Aadi Store.", "success");
+
+                    // Send the user back to the catalog after successful order
+                    setTimeout(() => {
+                        window.location.href = 'products.html';
+                    }, 2500);
+
+                } catch (error) {
+                    console.error("Checkout transaction error:", error);
+                    ToastSystemNotifier.trigger("Failed to process order transaction pipeline.", "danger");
+                }
+            }
+        };
+
+        // Hook system startup initialization procedures to DOM content parsing completions events thread loops
+        document.addEventListener('DOMContentLoaded', fetchCartDataFromBackend);
+    </script>
+</body>
+</html>

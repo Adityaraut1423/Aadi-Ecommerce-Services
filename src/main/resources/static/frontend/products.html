@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Catalog Hub | Aadi Store</title>
+    <!-- Core UI Variables Setup -->
+    <style>
+        :root {
+            --primary-blue: #1e3a8a;
+            --accent-blue: #2563eb;
+            --sky-blue: #38bdf8;
+            --dark-slate: #0f172a;
+            --muted-slate: #334155;
+            --gray-cool: #f5f7fb;
+            --border-light: #cbd5e1;
+            --border-extra-light: #e2e8f0;
+            --text-muted: #64748b;
+            --success-green: #16a34a;
+            --success-hover: #15803d;
+            --danger-red: #ef4444;
+            --danger-light: #fee2e2;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.02);
+            --shadow-md: 0 5px 15px rgba(0,0,0,0.05);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.08);
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --transition-speed: 0.25s;
+        }
+
+        /* RESET SYSTEM ENGINE */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--gray-cool);
+            color: var(--muted-slate);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        /* FIXED NOTIFICATION DECK LAYER */
+        #notificationConsole {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 5000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 420px;
+            width: calc(100% - 48px);
+        }
+
+        .toast-banner {
+            background: white;
+            border-left: 4px solid var(--accent-blue);
+            padding: 16px 20px;
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideInRight var(--transition-speed) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .toast-banner.success { border-left-color: var(--success-green); }
+        .toast-banner.danger { border-left-color: var(--danger-red); }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(120%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* NAVBAR CORE */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 2000;
+            background: var(--primary-blue);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 60px;
+            height: 80px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        .logo-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            color: white;
+            font-size: 26px;
+            font-weight: 800;
+            text-decoration: none;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-tag {
+            background: rgba(255,255,255,0.15);
+            color: var(--sky-blue);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 20px;
+            text-transform: uppercase;
+        }
+
+        .search-box {
+            display: flex;
+            width: 380px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            outline: none;
+            border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+            font-size: 14px;
+        }
+
+        .search-box button {
+            border: none;
+            padding: 0 20px;
+            cursor: pointer;
+            background: var(--sky-blue);
+            color: var(--dark-slate);
+            font-weight: bold;
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            transition: background var(--transition-speed);
+        }
+
+        .search-box button:hover {
+            background: #7dd3fc;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            align-items: center;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: rgba(255,255,255,0.8);
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-weight: 500;
+            font-size: 15px;
+            transition: all var(--transition-speed);
+        }
+
+        nav ul li a:hover {
+            color: white;
+            background: rgba(255,255,255,0.08);
+        }
+
+        nav ul li a.active {
+            background: var(--accent-blue);
+            color: white;
+            box-shadow: 0 4px 12px rgba(37,99,235,0.2);
+        }
+
+        /* MAIN SECTION STACK */
+        main {
+            flex: 1;
+            width: 85%;
+            max-width: 1400px;
+            margin: 50px auto;
+        }
+
+        .catalog-header-block {
+            margin-bottom: 36px;
+            text-align: center;
+        }
+
+        .page-title {
+            font-size: 34px;
+            color: var(--dark-slate);
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle-trail {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        /* UTILITY FILTER DECK BAR */
+        .filter-control-deck {
+            background: white;
+            padding: 18px 30px;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-extra-light);
+            margin-bottom: 35px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .filter-group label {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--dark-slate);
+        }
+
+        .filter-group select {
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-light);
+            outline: none;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+        }
+
+        /* LOADING MICRO-SHIMMER SKELETON ENGINE */
+        .skeleton-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .skeleton-card {
+            background: white;
+            height: 420px;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .shimmer-block {
+            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+            background-size: 200% 100%;
+            animation: shimmerEffect 1.6s infinite linear;
+            border-radius: var(--radius-sm);
+        }
+
+        .shimmer-img { height: 200px; }
+        .shimmer-title { height: 24px; width: 70%; }
+        .shimmer-text { height: 50px; }
+        .shimmer-btn { height: 44px; margin-top: auto; }
+
+        @keyframes shimmerEffect {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* CARD CATALOG PLATFORM */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 35px;
+            margin-bottom: 50px;
+        }
+
+        .card {
+            background: white;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-extra-light);
+            transition: all var(--transition-speed) ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--border-light);
+        }
+
+        .card-img-wrapper {
+            position: relative;
+            overflow: hidden;
+            background-color: #e2e8f0;
+        }
+
+        .card img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .card:hover img {
+            transform: scale(1.05);
+        }
+
+        .card-body {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .card h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--dark-slate);
+            margin-bottom: 8px;
+            letter-spacing: -0.3px;
+        }
+
+        .card p {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-extra-light);
+        }
+
+        .price {
+            color: var(--accent-blue);
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .stock-tag {
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .in-stock { background: #dcfce7; color: var(--success-green); }
+        .out-of-stock { background: var(--danger-light); color: var(--danger-red); }
+
+        .add-to-cart-btn {
+            width: 100%;
+            margin-top: 18px;
+            padding: 14px;
+            border: none;
+            border-radius: var(--radius-sm);
+            background: var(--success-green);
+            color: white;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 700;
+            box-shadow: 0 4px 10px rgba(22,163,74,0.1);
+            transition: all var(--transition-speed);
+        }
+
+        .add-to-cart-btn:hover {
+            background: var(--success-hover);
+            box-shadow: 0 6px 16px rgba(22,163,74,0.2);
+        }
+        
+        .add-to-cart-btn:disabled {
+            background: var(--border-light);
+            color: #94a3b8;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .status-msg {
+            text-align: center;
+            font-size: 18px;
+            color: var(--text-muted);
+            padding: 60px 20px;
+            grid-column: 1 / -1;
+            background: white;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-extra-light);
+        }
+
+        /* FOOTER MODULE */
+        footer {
+            background: var(--dark-slate);
+            color: var(--text-muted);
+            padding: 30px 0;
+            text-align: center;
+            font-size: 14px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            margin-top: auto;
+        }
+
+        /* RESPONSIVE DESIGN MEDIA HOOKS */
+        @media (max-width: 992px) {
+            main { width: 90%; }
+            nav { padding: 0 30px; }
+        }
+
+        @media (max-width: 768px) {
+            nav { height: auto; padding: 20px; flex-direction: column; gap: 15px; }
+            .search-box { width: 100%; }
+            nav ul { width: 100%; justify-content: center; margin-top: 5px; }
+            .filter-control-deck { flex-direction: column; align-items: stretch; padding: 20px; }
+            .filter-group select { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NOTIFICATION MODAL TOAST STACK -->
+    <div id="notificationConsole" role="alert"></div>
+
+    <header>
+        <nav role="navigation" aria-label="Master Store Navigation">
+            <div class="logo-wrapper">
+                <a href="index.html" class="logo">Aadi Store</a>
+                <span class="logo-tag">Catalog</span>
+            </div>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search product catalogs by name...">
+                <button type="button" onclick="SearchFilterEngine.executeClientSearch()">🔍</button>
+            </div>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="products.html" class="active">Products</a></li>
+                <li><a href="cart.html">Cart</a></li>
+                <li><a href="orders.html">My Orders</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="catalog-header-block">
+            <h1 class="page-title">Explore Global Catalogs</h1>
+            <div class="subtitle-trail">Live relational query connections mapping directly to system database storage records</div>
+        </div>
+
+        <!-- REFINEMENT FILTERS ENGINE TOOLBAR -->
+        <section class="filter-control-deck" aria-label="Catalog Filters">
+            <div class="filter-group">
+                <label for="priceSortSelect">Organize Distribution:</label>
+                <select id="priceSortSelect" onchange="SearchFilterEngine.processCatalogsOrdering()">
+                    <option value="default">Database Default Ordering</option>
+                    <option value="low-high">Price Valuation: Low to High</option>
+                    <option value="high-low">Price Valuation: High to Low</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="stockFilterSelect">Availability Filter:</label>
+                <select id="stockFilterSelect" onchange="SearchFilterEngine.executeClientSearch()">
+                    <option value="all">Show Complete Inventory Records</option>
+                    <option value="instock">Filter By Active Stock Availability</option>
+                </select>
+            </div>
+        </section>
+        
+        <!-- MICRO-SHIMMER LOAD SCREEN INDICATOR -->
+        <section id="shimmerInstanceGrid" class="skeleton-grid">
+            <div class="skeleton-card"><div class="shimmer-block shimmer-img"></div><div class="shimmer-block shimmer-title"></div><div class="shimmer-block shimmer-text"></div><div class="shimmer-block shimmer-btn"></div></div>
+            <div class="skeleton-card"><div class="shimmer-block shimmer-img"></div><div class="shimmer-block shimmer-title"></div><div class="shimmer-block shimmer-text"></div><div class="shimmer-block shimmer-btn"></div></div>
+            <div class="skeleton-card"><div class="shimmer-block shimmer-img"></div><div class="shimmer-block shimmer-title"></div><div class="shimmer-block shimmer-text"></div><div class="shimmer-block shimmer-btn"></div></div>
+        </section>
+        
+        <!-- Active Target Injections Container Grid Node -->
+        <section class="products-grid" id="productsContainer" style="display: none;"></section>
+    </main>
+
+    <footer>
+        <div style="max-width: 1400px; margin: 0 auto; width: 85%;">
+            &copy; 2026 Aadi Store | Automated Database Distribution Mapping Engine.
+        </div>
+    </footer>
+
+    <!-- RUNTIME DATA ROUTER PIPELINE ENGINES -->
+    <script>
+        /**
+         * STATIC GLOBAL PROPERTIES SCHEMA DEFINITIONS
+         */
+        const AppServiceConfig = {
+            endpoints: {
+                fetchProducts: 'http://localhost:8080/api/products',
+                appendCart: 'http://localhost:8080/api/cart/add'
+            },
+            fallbackSessionId: 1,
+            localFormattingSignature: 'en-IN',
+            currencyISOCode: 'INR'
+        };
+
+        // Local browser storage tracking extraction operations
+        const loggedUserContext = JSON.parse(localStorage.getItem('sessionUser'));
+        const CURRENT_ACTIVE_USER_ID = loggedUserContext ? loggedUserContext.id : AppServiceConfig.fallbackUserIndex;
+
+        // Core memory reference state array register caches
+        let coreCatalogStateRegister = [];
+
+        // Formatting currency display handler pipelines instance
+        const catalogCurrencyFormatter = new Intl.NumberFormat(AppServiceConfig.localFormattingSignature, {
+            style: 'currency',
+            currency: AppServiceConfig.currencyISOCode,
+            maximumFractionDigits: 0
+        });
+
+        /**
+         * NOTIFICATION MANAGER BANNER INTERFACE DECK LOGIC
+         */
+        const CatalogToastSystem = {
+            triggerNotification: function(messageString, variantTypeClass = 'success') {
+                const logsRootConsoleNode = document.getElementById('notificationConsole');
+                const elementWrapper = document.createElement('div');
+                elementWrapper.className = `toast-banner ${variantTypeClass}`;
+                
+                elementWrapper.innerHTML = `
+                    <span style="font-size: 14px; font-weight: 600;">${messageString}</span>
+                    <span style="cursor: pointer; margin-left: 20px; font-size: 12px; opacity: 0.6;" onclick="this.parentElement.remove()">✕</span>
+                `;
+                
+                logsRootConsoleNode.appendChild(elementWrapper);
+                setTimeout(() => { if(elementWrapper) elementWrapper.remove(); }, 3500);
+            }
+        };
+
+        /**
+         * READ TRANSACTIONS PIPELINE INTERFACE SERVICE METHODS
+         */
+        async function fetchProductsFromDatabaseEngine() {
+            const loadingShimmerDeck = document.getElementById('shimmerInstanceGrid');
+            const dataGridContainerNode = document.getElementById('productsContainer');
+
+            try {
+                const operationalNetworkResponse = await fetch(AppServiceConfig.endpoints.fetchProducts);
+                
+                if (!operationalNetworkResponse.ok) {
+                    throw new Error(`Data acquisition fault logic captured: Exception status value ${operationalNetworkResponse.status}`);
+                }
+
+                coreCatalogStateRegister = await operationalNetworkResponse.json();              
+                loadingShimmerDeck.style.display = 'none';
+                dataGridContainerNode.style.display = 'grid';
+                
+                SearchFilterEngine.executeClientSearch();
+            } catch (networkInterfaceErrorAnomalies) {
+                console.error("API Fetch operational routing error:", networkInterfaceErrorAnomalies);
+                loadingShimmerDeck.style.display = 'none';
+                dataGridContainerNode.style.display = 'grid';
+                
+                dataGridContainerNode.innerHTML = `
+                    <div class="status-msg" style="color: var(--danger-red); border-color: var(--danger-red);">
+                        <h3>Relational Catalog API Pipeline Disconnected</h3>
+                        <p style="margin-top: 10px; font-size: 14px; color: var(--text-muted);">Failed to secure data handshake arrays from the local Spring Boot REST endpoint configuration targets at port 8080. Verify that your server execution process engine is actively running and CrossOrigin access annotations parameters are declared.</p>
+                        <button onclick="window.location.reload()" style="margin-top:20px; padding: 10px 24px; border:none; background: var(--dark-slate); color:white; font-weight:700; border-radius:4px; cursor:pointer;">Retry API Pipeline Call</button>
+                    </div>
+                `;
+            }
+        }
+
+        /**
+         * RENDER GRAPHICAL LAYOUT INTERFACE GENERATOR COMPONENT
+         */
+        const InterfaceUIGenerator = {
+            injectCardsToGrid: function(processedDataArrays) {
+                const gridInjectionTargetNode = document.getElementById('productsContainer');
+                gridInjectionTargetNode.innerHTML = '';
+
+                if (!processedDataArrays || processedDataArrays.length === 0) {
+                    gridInjectionTargetNode.innerHTML = `<div class="status-msg">No active product entity records found matching your specified optimization filter requirements.</div>`;
+                    return;
+                }
+
+                processedDataArrays.forEach(entityRow => {
+                    const isAvailable = entityRow.quantity > 0;
+                    
+                    // DYNAMIC DATA MAPPING RESOLVER: Maps graphic links dynamically straight out of your database column entities rows
+                    const trueActiveAssetSource = entityRow.imageUrl && entityRow.imageUrl.trim() !== '' 
+                        ? entityRow.imageUrl 
+                        : 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600';
+
+                    gridInjectionTargetNode.innerHTML += `
+                        <article class="card">
+                            <div class="card-img-wrapper">
+                                <img src="${trueActiveAssetSource}" alt="${entityRow.name}" onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600'">
+                            </div>
+                            <div class="card-body">
+                                <h3>${entityRow.name}</h3>
+                                <p>${entityRow.description || 'No custom descriptive summary attributes stored inside the relational database fields for this specific card selection.'}</p>
+                                <div class="price-row">
+                                    <span class="price">${catalogCurrencyFormatter.format(entityRow.price)}</span>
+                                    <span class="stock-tag ${isAvailable ? 'in-stock' : 'out-of-stock'}">${isAvailable ? 'In Stock' : 'Out of Stock'}</span>
+                                </div>
+                                <button 
+                                    type="button" 
+                                    class="add-to-cart-btn" 
+                                    onclick="TransactionalCartDispatchEngine.dispatchCartPayloadItem(${entityRow.id}, '${entityRow.name.replace(/'/g, "\\'")}')" 
+                                    ${isAvailable ? '' : 'disabled'}>
+                                    ${isAvailable ? 'Add to Shipping Cart' : 'Catalog Sold Out'}
+                                </button>
+                            </div>
+                        </article>
+                    `;
+                });
+            }
+        };
+
+        /**
+         * SEARCH FILTER FILTERING UTILITIES CONTROLLER ENGINE
+         */
+        const SearchFilterEngine = {
+            executeClientSearch: function() {
+                const searchFieldStringValue = document.getElementById('searchInput').value.toLowerCase().trim();
+                const stockFilterSelectionConstraint = document.getElementById('stockFilterSelect').value;
+
+                let outputProcessingResultsRegister = coreCatalogStateRegister.filter(itemRecord => {
+                    const validationTextString = itemRecord.name.toLowerCase() + (itemRecord.description ? itemRecord.description.toLowerCase() : '');
+                    const matchesSearchQuerySignature = validationTextString.includes(searchFieldStringValue);
+                    
+                    const matchesStockConstraintRequirements = stockFilterSelectionConstraint === 'all' || (stockFilterSelectionConstraint === 'instock' && itemRecord.quantity > 0);
+
+                    return matchesSearchQuerySignature && matchesStockConstraintRequirements;
+                });
+
+                this.applySortingTransformation(outputProcessingResultsRegister);
+            },
+
+            processCatalogsOrdering: function() {
+                this.executeClientSearch();
+            },
+
+            applySortingTransformation: function(targetWorkingArrayRegister) {
+                const sortingMethodSignatureKey = document.getElementById('priceSortSelect').value;
+
+                if (sortingMethodSignatureKey === 'low-high') {
+                    targetWorkingArrayRegister.sort((firstNode, secondNode) => firstNode.price - secondNode.price);
+                } else if (sortingMethodSignatureKey === 'high-low') {
+                    targetWorkingArrayRegister.sort((firstNode, secondNode) => secondNode.price - firstNode.price);
+                }
+
+                InterfaceUIGenerator.injectCardsToGrid(targetWorkingArrayRegister);
+            }
+        };
+
+        /**
+         * TRANSACTIONS OPERATION PIPELINES (POST REQUEST ROUTINES MODULE ENGINE)
+         */
+        const TransactionalCartDispatchEngine = {
+            dispatchCartPayloadItem: async function(targetedDatabaseProductIdKey, clearTextProductName) {
+                
+                // 👈 THIS IS THE NEW CONFIRMATION POP-UP LOGIC!
+                const userConfirmed = confirm(`Are you sure you want to add "${clearTextProductName}" to your shopping cart?`);
+                if (!userConfirmed) {
+                    return; // Stop the function completely if the user clicks "Cancel"
+                }
+
+                try {
+                    const transactionalCartPayloadRequestEndpoint = AppServiceConfig.endpoints.appendCart;
+                    const networkDispatchTransactionResponse = await fetch(transactionalCartPayloadRequestEndpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userId: CURRENT_ACTIVE_USER_ID,
+                            productId: targetedDatabaseProductIdKey,
+                            quantity: 1
+                        })
+                    });
+
+                    if (!networkDispatchTransactionResponse.ok) {
+                        const parsingServerResponseErrorMessage = await networkDispatchTransactionResponse.text();
+                        throw new Error(parsingServerResponseErrorMessage || "The server orchestrator rejected transaction execution constraints.");
+                    }
+
+                    CatalogToastSystem.triggerNotification(`🎉 Excellent selection! ${clearTextProductName} successfully mapped into your relational database cart storage tables.`, 'success');
+                } catch (payloadTransmissionPipelineFaultException) {
+                    console.error("Cart insertion operational mutation workflow anomaly caught:", payloadTransmissionPipelineFaultException);
+                    CatalogToastSystem.triggerNotification(`Failed to record selection mapping: ${payloadTransmissionPipelineFaultException.message}`, 'danger');
+                }
+            }
+        };
+
+        // Wire startup life cycles database calls processing pipelines hooks to the structural parsing completion events thread loop
+        document.getElementById('searchInput').addEventListener('input', () => SearchFilterEngine.executeClientSearch());
+        document.addEventListener('DOMContentLoaded', fetchProductsFromDatabaseEngine);
+    </script>
+</body>
+</html>

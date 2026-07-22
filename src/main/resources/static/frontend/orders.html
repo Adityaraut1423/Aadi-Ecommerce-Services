@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders | Aadi Store</title>
+    <style>
+        :root {
+            --primary-blue: #1e3a8a;
+            --accent-blue: #2563eb;
+            --success-green: #16a34a;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --gray-bg: #f8fafc;
+            --card-bg: #ffffff;
+            --border-light: #e2e8f0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: var(--gray-bg); color: var(--text-dark); min-height: 100vh; display: flex; flex-direction: column; }
+
+        /* NAVBAR */
+        nav {
+            position: sticky; top: 0; z-index: 1000;
+            background: var(--primary-blue);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 60px; height: 80px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        .logo { color: white; font-size: 26px; font-weight: 800; text-decoration: none; }
+        nav ul { list-style: none; display: flex; align-items: center; height: 100%; }
+        nav ul li { margin-left: 10px; }
+        nav ul li a {
+            text-decoration: none; color: rgba(255,255,255,0.8);
+            padding: 8px 16px; border-radius: 6px; font-weight: 500; transition: 0.3s;
+        }
+        nav ul li a:hover, nav ul li a.active { color: white; background: rgba(255,255,255,0.1); }
+
+        /* MAIN CONTENT */
+        main { padding: 40px 60px; max-width: 1000px; margin: 0 auto; width: 100%; flex: 1; }
+        h1 { margin-bottom: 10px; font-size: 32px; color: var(--text-dark); }
+        .subtitle { color: var(--text-muted); margin-bottom: 30px; font-size: 16px; }
+
+        /* ORDER CARDS */
+        .order-list { display: flex; flex-direction: column; gap: 20px; }
+        .order-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s ease;
+        }
+        .order-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        
+        .order-info h3 { font-size: 20px; color: var(--primary-blue); margin-bottom: 8px; }
+        .order-info p { color: var(--text-muted); font-size: 14px; margin-bottom: 5px; }
+        
+        .order-amount { text-align: right; }
+        .order-amount .price { font-size: 24px; font-weight: 800; color: var(--success-green); }
+        .order-amount .status { display: inline-block; margin-top: 8px; padding: 4px 12px; background: #dcfce7; color: #166534; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+
+        .empty-state { text-align: center; padding: 60px 20px; background: white; border-radius: 12px; border: 1px dashed #cbd5e1; color: var(--text-muted); }
+        .empty-state a { display: inline-block; margin-top: 15px; padding: 10px 20px; background: var(--accent-blue); color: white; text-decoration: none; border-radius: 6px; font-weight: bold; }
+
+        @media (max-width: 768px) {
+            nav { padding: 0 20px; }
+            main { padding: 20px; }
+            .order-card { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .order-amount { text-align: left; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <nav>
+            <a href="index.html" class="logo">Aadi Store</a>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="products.html">Products</a></li>
+                <li><a href="cart.html">Cart</a></li>
+                <li><a href="orders.html" class="active">My Orders</a></li>
+                <li id="authLink"><a href="login.html">Login</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <h1>My Order History</h1>
+        <p class="subtitle">View and track your recent purchases.</p>
+        
+        <div id="ordersContainer" class="order-list">
+            <div class="empty-state">Loading your order history...</div>
+        </div>
+    </main>
+
+    <script>
+        const API_ORDERS_URL = 'http://localhost:8080/api/orders/user';
+        let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const sessionData = localStorage.getItem('sessionUser');
+            if (sessionData) {
+                currentUser = JSON.parse(sessionData);
+                document.getElementById('authLink').innerHTML = `<a href="#" onclick="logout()">Logout</a>`;
+                
+                if(!currentUser.id) {
+                    renderEmptyState("Session invalid. Please log in again.");
+                    return;
+                }
+                
+                fetchUserOrders();
+            } else {
+                renderEmptyState("You must be logged in to view your order history.");
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem('sessionUser');
+            window.location.href = 'login.html';
+        }
+
+        function renderEmptyState(message = "You haven't placed any orders yet.") {
+            document.getElementById('ordersContainer').innerHTML = `
+                <div class="empty-state">
+                    <h3>📦 ${message}</h3>
+                    <a href="products.html">Browse Products</a>
+                </div>
+            `;
+        }
+
+        async function fetchUserOrders() {
+            try {
+                const response = await fetch(`${API_ORDERS_URL}/${currentUser.id}`);
+                if (!response.ok) throw new Error("Failed to fetch orders");
+                
+                const orders = await response.json();
+                
+                if (orders.length === 0) {
+                    renderEmptyState();
+                    return;
+                }
+
+                renderOrders(orders);
+            } catch (error) {
+                console.error(error);
+                renderEmptyState("Error connecting to the server.");
+            }
+        }
+
+        function renderOrders(orders) {
+            const container = document.getElementById('ordersContainer');
+            container.innerHTML = '';
+
+            // Sort orders so the newest ones show at the top
+            orders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
+
+            orders.forEach(order => {
+                // Format the LocalDateTime string into a readable format
+                const dateObj = new Date(order.orderDate);
+                const formattedDate = dateObj.toLocaleDateString('en-IN', {
+                    year: 'numeric', month: 'long', day: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                });
+
+                container.innerHTML += `
+                    <div class="order-card">
+                        <div class="order-info">
+                            <h3>Order #${order.id}</h3>
+                            <p><strong>Placed on:</strong> ${formattedDate}</p>
+                            <p><strong>Payment Method:</strong> Secure Checkout</p>
+                        </div>
+                        <div class="order-amount">
+                            <div class="price">₹${order.totalAmount}</div>
+                            <div class="status">Confirmed</div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>
