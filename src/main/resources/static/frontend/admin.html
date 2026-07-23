@@ -31,6 +31,7 @@
             display: flex;
             flex-direction: column;
             box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+            z-index: 1000;
         }
 
         .sidebar-header {
@@ -105,10 +106,10 @@
         /* FORMS */
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: var(--muted-slate); text-transform: uppercase; }
-        .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border-light); border-radius: 6px; outline: none; background: #f8fafc; }
+        .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border-light); border-radius: 6px; outline: none; background: #f8fafc; font-size: 14px; }
         .form-group input:focus, .form-group textarea:focus { border-color: var(--accent-blue); background: white; }
         
-        button { background: var(--accent-blue); color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        button { background: var(--accent-blue); color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 14px; }
         button:hover { background: #1d4ed8; }
         button.danger { background: var(--danger-red); }
         button.danger:hover { background: #b91c1c; }
@@ -131,6 +132,13 @@
         .toast.show { transform: translateX(0); }
         .toast.error { background: var(--danger-red); border-left: 4px solid #7f1d1d; }
 
+        @media (max-width: 992px) {
+            aside { width: 80px; }
+            .sidebar-header, .admin-profile p, .nav-menu li span { display: none; }
+            .nav-menu li { justify-content: center; padding: 20px; }
+            main { margin-left: 80px; width: calc(100% - 80px); padding: 20px; }
+            .grid-layout { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -141,10 +149,10 @@
     <aside>
         <div class="sidebar-header">Aadi Admin</div>
         <ul class="nav-menu">
-            <li class="active" onclick="switchTab('products')" id="nav-products">📦 Manage Products</li>
-            <li onclick="switchTab('users')" id="nav-users">👥 Manage Users</li>
-            <li onclick="switchTab('orders')" id="nav-orders">🛒 Manage Orders</li>
-            <li onclick="switchTab('settings')" id="nav-settings">⚙️ System Settings</li>
+            <li class="active" onclick="switchTab('products')" id="nav-products">📦 <span>Manage Products</span></li>
+            <li onclick="switchTab('users')" id="nav-users">👥 <span>Manage Users</span></li>
+            <li onclick="switchTab('orders')" id="nav-orders">🛒 <span>Manage Orders</span></li>
+            <li onclick="switchTab('settings')" id="nav-settings">⚙️ <span>System Settings</span></li>
         </ul>
         <div class="admin-profile">
             <p id="adminNameDisplay">Logged in as: Admin</p>
@@ -167,23 +175,23 @@
                     <h2>Add New Product</h2>
                     <form id="addProductForm">
                         <div class="form-group">
-                            <label>Product Name</label>
+                            <label for="pName">Product Name</label>
                             <input type="text" id="pName" required>
                         </div>
                         <div class="form-group">
-                            <label>Price (₹)</label>
-                            <input type="number" id="pPrice" required min="1">
+                            <label for="pPrice">Price (₹)</label>
+                            <input type="number" id="pPrice" required min="1" step="any">
                         </div>
                         <div class="form-group">
-                            <label>Stock Quantity</label>
+                            <label for="pQuantity">Stock Quantity</label>
                             <input type="number" id="pQuantity" required min="0">
                         </div>
                         <div class="form-group">
-                            <label>Image URL</label>
+                            <label for="pImageUrl">Image URL</label>
                             <input type="url" id="pImageUrl" placeholder="https://example.com/image.jpg">
                         </div>
                         <div class="form-group">
-                            <label>Description</label>
+                            <label for="pDesc">Description</label>
                             <textarea id="pDesc" rows="4"></textarea>
                         </div>
                         <button type="submit" style="width: 100%;">Create Product</button>
@@ -205,7 +213,7 @@
                             </tr>
                         </thead>
                         <tbody id="inventoryTableBody">
-                            <!-- Injected via JS -->
+                            <tr><td colspan="6" style="text-align:center; color:#64748b;">Loading products...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -227,13 +235,13 @@
                         </tr>
                     </thead>
                     <tbody id="usersTableBody">
-                        <!-- Injected via JS -->
+                        <tr><td colspan="5" style="text-align:center; color:#64748b;">Loading users...</td></tr>
                     </tbody>
                 </table>
             </div>
         </section>
 
-        <!-- SECTION 4: ORDERS -->
+        <!-- SECTION 3: ORDERS -->
         <section id="orders-section" class="dashboard-section">
             <div class="card table-container">
                 <h2>Global Order Database</h2>
@@ -248,23 +256,23 @@
                         </tr>
                     </thead>
                     <tbody id="ordersTableBody">
-                        <!-- Injected via JS -->
+                        <tr><td colspan="5" style="text-align:center; color:#64748b;">Loading order registry...</td></tr>
                     </tbody>
                 </table>
             </div>
         </section>
 
-        <!-- SECTION 3: SETTINGS -->
+        <!-- SECTION 4: SETTINGS -->
         <section id="settings-section" class="dashboard-section">
             <div class="card">
-                <h2>System Information</h2>
-                <p style="color: var(--muted-slate); line-height: 1.6;">
-                    <strong>API Endpoints Connected:</strong><br>
-                    Products: https://aadi-ecommerce-services-1.onrender.com/api/products<br>
-                    Users: https://aadi-ecommerce-services-1.onrender.com/api/users<br>
-                    Orders: https://aadi-ecommerce-services-1.onrender.com/api/orders<br>
+                <h2>System Information & Host Diagnostics</h2>
+                <p style="color: var(--muted-slate); line-height: 1.8;">
+                    <strong>Connected Backend Endpoint:</strong> <code id="activeHostDisplay" style="background:#f1f5f9; padding:2px 6px; border-radius:4px; font-weight:bold;">Resolving...</code><br>
+                    <strong>Products API:</strong> <span id="productsApiDisplay">...</span><br>
+                    <strong>Users API:</strong> <span id="usersApiDisplay">...</span><br>
+                    <strong>Orders API:</strong> <span id="ordersApiDisplay">...</span><br>
                     <br>
-                    <em>Note: Advanced store configuration, database backups, and payment gateway webhooks will be available in the upcoming v2.0 release.</em>
+                    <em>Note: Advanced store configuration, database backups, and payment gateway webhooks will be available in the upcoming release.</em>
                 </p>
             </div>
         </section>
@@ -273,28 +281,42 @@
 
     <!-- ADMIN LOGIC CONTROLLER -->
     <script>
-        // 1. SECURITY & INITIALIZATION (Updated with live Render backend URLs)
-        const API_PRODUCTS_URL = 'https://aadi-ecommerce-services-1.onrender.com/api/products';
-        const API_USERS_URL = 'https://aadi-ecommerce-services-1.onrender.com/api/users';
-        const API_ORDERS_URL = 'https://aadi-ecommerce-services-1.onrender.com/api/orders';
+        // 1. DYNAMIC BACKEND RESOLUTION
+        const BACKEND_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:8080'
+            : 'https://aadi-ecommerce-services-1.onrender.com';
+
+        const API_PRODUCTS_URL = `${BACKEND_BASE}/api/products`;
+        const API_USERS_URL    = `${BACKEND_BASE}/api/users`;
+        const API_ORDERS_URL   = `${BACKEND_BASE}/api/orders`;
 
         document.addEventListener('DOMContentLoaded', () => {
+            // Update Settings Display
+            document.getElementById('activeHostDisplay').textContent = BACKEND_BASE;
+            document.getElementById('productsApiDisplay').textContent = API_PRODUCTS_URL;
+            document.getElementById('usersApiDisplay').textContent = API_USERS_URL;
+            document.getElementById('ordersApiDisplay').textContent = API_ORDERS_URL;
+
+            // Security Guard Check
             const sessionData = localStorage.getItem('sessionUser');
             if (!sessionData) {
+                alert("🔑 Authentication required. Please log in first.");
                 window.location.href = 'login.html';
                 return;
             }
             
             const user = JSON.parse(sessionData);
-            if (user.role !== 'ADMIN') {
-                alert("ACCESS DENIED: Administrator privileges required.");
+            const userRole = (user.role || '').toUpperCase();
+            
+            if (!userRole.includes('ADMIN')) {
+                alert("⛔ ACCESS DENIED: Administrative privileges required.");
                 window.location.href = 'index.html';
                 return;
             }
 
             document.getElementById('adminNameDisplay').innerText = `Admin: ${user.name || user.email}`;
             
-            // Load initial data
+            // Initializing Data Loads
             loadInventory();
             loadUsers();
             loadOrders();
@@ -309,7 +331,7 @@
         }
 
         function executeSystemLogout() {
-            if(confirm("Securely end admin session?")) {
+            if (confirm("Securely end admin session?")) {
                 localStorage.removeItem('sessionUser');
                 window.location.href = 'login.html';
             }
@@ -318,61 +340,79 @@
         function switchTab(tabName) {
             // Update Active Menu Item
             document.querySelectorAll('.nav-menu li').forEach(li => li.classList.remove('active'));
-            document.getElementById(`nav-${tabName}`).classList.add('active');
+            const targetNav = document.getElementById(`nav-${tabName}`);
+            if (targetNav) targetNav.classList.add('active');
 
             // Hide all sections, show target
             document.querySelectorAll('.dashboard-section').forEach(sec => sec.classList.remove('active'));
-            document.getElementById(`${tabName}-section`).classList.add('active');
+            const targetSection = document.getElementById(`${tabName}-section`);
+            if (targetSection) targetSection.classList.add('active');
 
             // Update Page Title
-            const titles = { 'products': 'Product Inventory', 'users': 'User Management', 'orders': 'Order Management', 'settings': 'System Settings' };
-            document.getElementById('pageTitle').innerText = titles[tabName];
+            const titles = { 
+                'products': 'Product Inventory', 
+                'users': 'User Management', 
+                'orders': 'Order Management', 
+                'settings': 'System Settings' 
+            };
+            document.getElementById('pageTitle').innerText = titles[tabName] || 'Dashboard';
         }
 
         // ==========================================
         // PRODUCT MANAGEMENT LOGIC
         // ==========================================
         async function loadInventory() {
+            const tbody = document.getElementById('inventoryTableBody');
             try {
                 const response = await fetch(API_PRODUCTS_URL);
-                if(!response.ok) throw new Error("Failed to connect to database");
-                const products = await response.json();
+                if (!response.ok) throw new Error("Failed to connect to database");
                 
-                const tbody = document.getElementById('inventoryTableBody');
+                const products = await response.json();
                 tbody.innerHTML = '';
 
+                if (!Array.isArray(products) || products.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#64748b;">No products found in database.</td></tr>';
+                    return;
+                }
+
                 products.forEach(p => {
-                    const imageUrl = p.imageUrl || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100';
-                    tbody.innerHTML += `
-                        <tr>
-                            <td><img src="${imageUrl}" alt="product" onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100'"></td>
-                            <td style="color:#64748b; font-weight:600;">#${p.id}</td>
-                            <td><strong>${p.name}</strong></td>
-                            <td style="color:var(--success-green); font-weight:bold;">₹${p.price}</td>
-                            <td>${p.quantity} units</td>
-                            <td>
-                                <button class="danger" style="padding: 6px 12px; font-size:12px;" onclick="deleteProduct(${p.id})">Purge</button>
-                            </td>
-                        </tr>
+                    const fallbackImg = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100';
+                    const imageUrl = (p.imageUrl && p.imageUrl.trim() !== '') ? p.imageUrl : fallbackImg;
+                    const stockQty = p.quantity !== undefined ? p.quantity : (p.stock !== undefined ? p.stock : 0);
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><img src="${imageUrl}" alt="${p.name}" onerror="this.src='${fallbackImg}'"></td>
+                        <td style="color:#64748b; font-weight:600;">#${p.id}</td>
+                        <td><strong>${p.name}</strong></td>
+                        <td style="color:var(--success-green); font-weight:bold;">₹${Number(p.price || 0).toLocaleString('en-IN')}</td>
+                        <td>${stockQty} units</td>
+                        <td>
+                            <button class="danger" style="padding: 6px 12px; font-size:12px;" onclick="deleteProduct(${p.id})">Purge</button>
+                        </td>
                     `;
+                    tbody.appendChild(row);
                 });
             } catch (error) {
-                console.error(error);
-                showToast("Failed to load products. Is backend online?", true);
+                console.error("Load Inventory Error:", error);
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--danger-red);">Failed to load catalog. Is backend live?</td></tr>';
+                showToast("Failed to load products from database.", true);
             }
         }
 
         document.getElementById('addProductForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button');
+            const originalText = btn.innerText;
             btn.innerText = "Saving...";
+            btn.disabled = true;
             
             const newProduct = {
-                name: document.getElementById('pName').value,
+                name: document.getElementById('pName').value.trim(),
                 price: parseFloat(document.getElementById('pPrice').value),
                 quantity: parseInt(document.getElementById('pQuantity').value),
-                imageUrl: document.getElementById('pImageUrl').value,
-                description: document.getElementById('pDesc').value
+                imageUrl: document.getElementById('pImageUrl').value.trim(),
+                description: document.getElementById('pDesc').value.trim()
             };
 
             try {
@@ -383,21 +423,23 @@
                 });
 
                 if (response.ok) {
-                    showToast("Product successfully added to database!");
+                    showToast("🎉 Product successfully added to database!");
                     e.target.reset();
                     loadInventory();
                 } else {
-                    throw new Error("Validation rejected by server");
+                    throw new Error("Server rejected product payload");
                 }
             } catch (error) {
-                showToast(error.message, true);
+                console.error("Add product error:", error);
+                showToast(error.message || "Failed to create product.", true);
             } finally {
-                btn.innerText = "Create Product";
+                btn.innerText = originalText;
+                btn.disabled = false;
             }
         });
 
         async function deleteProduct(productId) {
-            if (!confirm(`WARNING: Permanently delete Product #${productId} from the database?`)) return;
+            if (!confirm(`WARNING: Permanently delete Product #${productId} from database?`)) return;
 
             try {
                 const response = await fetch(`${API_PRODUCTS_URL}/${productId}`, { method: 'DELETE' });
@@ -408,6 +450,7 @@
                     throw new Error("Could not delete product.");
                 }
             } catch (error) {
+                console.error("Delete product error:", error);
                 showToast(error.message, true);
             }
         }
@@ -416,38 +459,45 @@
         // USER MANAGEMENT LOGIC
         // ==========================================
         async function loadUsers() {
+            const tbody = document.getElementById('usersTableBody');
             try {
                 const response = await fetch(API_USERS_URL);
-                if(!response.ok) {
-                    document.getElementById('usersTableBody').innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Failed to load users. Verify GET /api/users endpoint exists.</td></tr>`;
+                if (!response.ok) {
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--danger-red);">Failed to load user records. Check backend GET /api/users.</td></tr>`;
                     return;
                 }
                 const users = await response.json();
-                
-                const tbody = document.getElementById('usersTableBody');
                 tbody.innerHTML = '';
 
+                if (!Array.isArray(users) || users.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#64748b;">No registered users found.</td></tr>';
+                    return;
+                }
+
                 users.forEach(u => {
-                    const roleClass = u.role === 'ADMIN' ? 'role-admin' : 'role-customer';
-                    tbody.innerHTML += `
-                        <tr>
-                            <td style="color:#64748b; font-weight:600;">#${u.id}</td>
-                            <td><strong>${u.name}</strong></td>
-                            <td>${u.email}</td>
-                            <td><span class="role-badge ${roleClass}">${u.role}</span></td>
-                            <td>
-                                <button class="danger" style="padding: 6px 12px; font-size:12px;" onclick="deleteUser(${u.id})">Delete</button>
-                            </td>
-                        </tr>
+                    const roleStr = (u.role || 'USER').toUpperCase();
+                    const roleClass = roleStr.includes('ADMIN') ? 'role-admin' : 'role-customer';
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td style="color:#64748b; font-weight:600;">#${u.id}</td>
+                        <td><strong>${u.name || 'N/A'}</strong></td>
+                        <td>${u.email}</td>
+                        <td><span class="role-badge ${roleClass}">${roleStr}</span></td>
+                        <td>
+                            <button class="danger" style="padding: 6px 12px; font-size:12px;" onclick="deleteUser(${u.id})">Delete</button>
+                        </td>
                     `;
+                    tbody.appendChild(row);
                 });
             } catch (error) {
                 console.error("Error loading users:", error);
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--danger-red);">Unable to fetch user directory.</td></tr>`;
             }
         }
 
         async function deleteUser(userId) {
-            const currentAdmin = JSON.parse(localStorage.getItem('sessionUser'));
+            const currentAdmin = JSON.parse(localStorage.getItem('sessionUser') || '{}');
             if (currentAdmin.id === userId) {
                 showToast("Action Denied: You cannot delete your own admin account.", true);
                 return;
@@ -464,6 +514,7 @@
                     throw new Error("Backend rejected user deletion.");
                 }
             } catch (error) {
+                console.error("Delete user error:", error);
                 showToast(error.message, true);
             }
         }
@@ -472,38 +523,50 @@
         // ORDER MANAGEMENT LOGIC
         // ==========================================
         async function loadOrders() {
+            const tbody = document.getElementById('ordersTableBody');
             try {
                 const response = await fetch(API_ORDERS_URL);
-                if(!response.ok) {
-                    document.getElementById('ordersTableBody').innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Failed to load orders.</td></tr>`;
+                if (!response.ok) {
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--danger-red);">Failed to load order history.</td></tr>`;
                     return;
                 }
                 const orders = await response.json();
-                
-                const tbody = document.getElementById('ordersTableBody');
                 tbody.innerHTML = '';
 
-                orders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
+                if (!Array.isArray(orders) || orders.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#64748b;">No system orders recorded yet.</td></tr>';
+                    return;
+                }
+
+                // Sort newest orders first
+                orders.sort((a, b) => new Date(b.orderDate || b.createdAt || 0) - new Date(a.orderDate || a.createdAt || 0));
 
                 orders.forEach(o => {
-                    const dateObj = new Date(o.orderDate);
-                    const formattedDate = dateObj.toLocaleString('en-IN', {
-                        year: 'numeric', month: 'short', day: 'numeric',
-                        hour: '2-digit', minute: '2-digit'
-                    });
+                    const rawDate = o.orderDate || o.createdAt;
+                    let formattedDate = 'N/A';
+                    if (rawDate) {
+                        const dateObj = new Date(rawDate);
+                        if (!isNaN(dateObj.getTime())) {
+                            formattedDate = dateObj.toLocaleString('en-IN', {
+                                year: 'numeric', month: 'short', day: 'numeric',
+                                hour: '2-digit', minute: '2-digit'
+                            });
+                        }
+                    }
 
-                    tbody.innerHTML += `
-                        <tr>
-                            <td style="color:#64748b; font-weight:600;">#${o.id}</td>
-                            <td>User #${o.userId}</td>
-                            <td>${formattedDate}</td>
-                            <td style="color:var(--success-green); font-weight:bold;">₹${o.totalAmount}</td>
-                            <td><span class="role-badge role-admin">PAID</span></td>
-                        </tr>
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td style="color:#64748b; font-weight:600;">#${o.id}</td>
+                        <td>User #${o.userId || (o.user ? o.user.id : 'N/A')}</td>
+                        <td>${formattedDate}</td>
+                        <td style="color:var(--success-green); font-weight:bold;">₹${Number(o.totalAmount || o.totalPrice || 0).toLocaleString('en-IN')}</td>
+                        <td><span class="role-badge role-admin">${o.status || 'PAID'}</span></td>
                     `;
+                    tbody.appendChild(row);
                 });
             } catch (error) {
                 console.error("Error loading orders:", error);
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--danger-red);">Unable to fetch global order records.</td></tr>`;
             }
         }
     </script>
