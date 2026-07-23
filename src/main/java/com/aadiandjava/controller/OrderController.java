@@ -26,7 +26,8 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    @PostMapping
+    // 🌟 Mapped to both /api/orders AND /api/orders/place to resolve frontend URL mismatch
+    @PostMapping({ "", "/place" })
     public ResponseEntity<?> placeOrder(@RequestBody OrderRequest request) {
         try {
             OrderResponse response = orderService.placeOrder(request);
@@ -36,11 +37,13 @@ public class OrderController {
         }
     }
 
+    // Fetch order history for a specific user ID
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<OrderResponse>> getOrders(@PathVariable Long userId) {
         return ResponseEntity.ok(orderService.getOrdersByUser(userId));
     }
- // ADMIN ENDPOINT: Get all orders across the platform
+
+    // ADMIN ENDPOINT: Get all orders across the platform
     @GetMapping
     public ResponseEntity<List<OrderResponse>> getAllOrders() {
         return ResponseEntity.ok(orderService.getAllOrders());

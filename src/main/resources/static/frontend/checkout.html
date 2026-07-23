@@ -3,142 +3,255 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Checkout | Aadi Store</title>
+    <title>Checkout | Aadi Store</title>
     <style>
         :root {
             --primary-blue: #1e3a8a;
             --accent-blue: #2563eb;
-            --success-green: #16a34a;
-            --text-dark: #0f172a;
+            --sky-blue: #38bdf8;
+            --dark-slate: #0f172a;
+            --muted-slate: #334155;
+            --gray-cool: #f5f7fb;
+            --border-light: #cbd5e1;
+            --border-extra-light: #e2e8f0;
             --text-muted: #64748b;
-            --gray-bg: #f8fafc;
-            --card-bg: #ffffff;
-            --border-light: #e2e8f0;
+            --success-green: #16a34a;
+            --danger-red: #ef4444;
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --shadow-md: 0 5px 15px rgba(0,0,0,0.05);
+            --transition-speed: 0.25s;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
-        body { background-color: var(--gray-bg); color: var(--text-dark); min-height: 100vh; display: flex; flex-direction: column; }
+        body { background-color: var(--gray-cool); color: var(--muted-slate); min-height: 100vh; display: flex; flex-direction: column; }
 
-        nav { background: var(--primary-blue); display: flex; justify-content: space-between; align-items: center; padding: 0 60px; height: 80px; }
+        /* FIXED NOTIFICATION TOAST */
+        #notificationConsole { position: fixed; top: 24px; right: 24px; z-index: 5000; display: flex; flex-direction: column; gap: 12px; max-width: 420px; width: calc(100% - 48px); }
+        .toast-banner { background: white; border-left: 4px solid var(--accent-blue); padding: 16px 20px; border-radius: var(--radius-sm); box-shadow: 0 10px 25px rgba(0,0,0,0.08); font-size: 14px; font-weight: 600; animation: slideIn 0.25s forwards; }
+        .toast-banner.success { border-left-color: var(--success-green); }
+        .toast-banner.danger { border-left-color: var(--danger-red); }
+        @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
+
+        /* NAVBAR */
+        nav { background: var(--primary-blue); display: flex; justify-content: space-between; align-items: center; padding: 0 60px; height: 80px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); position: sticky; top: 0; z-index: 2000; }
         .logo { color: white; font-size: 26px; font-weight: 800; text-decoration: none; }
-        
-        main { padding: 40px 60px; max-width: 800px; margin: 0 auto; width: 100%; flex: 1; }
-        h1 { margin-bottom: 30px; text-align: center; }
+        nav ul { list-style: none; display: flex; align-items: center; gap: 8px; }
+        nav ul li a { text-decoration: none; color: rgba(255,255,255,0.8); padding: 8px 16px; border-radius: var(--radius-sm); font-weight: 500; font-size: 15px; }
+        nav ul li a:hover, nav ul li a.active { color: white; background: rgba(255,255,255,0.08); }
 
-        .checkout-card { background: var(--card-bg); padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border-light); }
-        
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: var(--text-muted); }
-        .form-group input { width: 100%; padding: 12px; border: 1px solid var(--border-light); border-radius: 6px; outline: none; }
-        .form-group input:focus { border-color: var(--accent-blue); }
+        /* LAYOUT */
+        main { flex: 1; width: 85%; max-width: 1200px; margin: 40px auto; }
+        .page-title { font-size: 28px; font-weight: 800; color: var(--dark-slate); margin-bottom: 24px; }
+        .checkout-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 32px; }
+        @media (max-width: 768px) { .checkout-grid { grid-template-columns: 1fr; } }
 
-        .row { display: flex; gap: 20px; }
-        .row .form-group { flex: 1; }
+        .card { background: white; border-radius: var(--radius-md); border: 1px solid var(--border-extra-light); padding: 28px; box-shadow: var(--shadow-md); margin-bottom: 24px; }
+        .card h2 { font-size: 20px; font-weight: 700; color: var(--dark-slate); margin-bottom: 20px; border-bottom: 1px solid var(--border-extra-light); padding-bottom: 12px; }
 
-        .pay-btn { width: 100%; padding: 16px; background: var(--success-green); color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 10px; }
-        .pay-btn:hover { background: #15803d; }
-        .pay-btn:disabled { background: #cbd5e1; cursor: not-allowed; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; color: var(--dark-slate); }
+        .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border-light); border-radius: var(--radius-sm); font-size: 14px; outline: none; }
+        .form-group input:focus, .form-group textarea:focus { border-color: var(--accent-blue); }
 
-        /* Success Overlay */
-        .success-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 2000; }
-        .modal-content { background: white; padding: 40px; border-radius: 16px; text-align: center; max-width: 400px; }
-        .modal-content h2 { color: var(--success-green); margin-bottom: 10px; }
-        .modal-content p { color: var(--text-muted); margin-bottom: 20px; }
-        .modal-btn { display: inline-block; padding: 12px 24px; background: var(--accent-blue); color: white; text-decoration: none; border-radius: 6px; font-weight: bold; }
+        .order-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-extra-light); }
+        .summary-row { display: flex; justify-content: space-between; margin-top: 12px; font-size: 15px; }
+        .summary-row.total { font-size: 20px; font-weight: 800; color: var(--dark-slate); border-top: 2px solid var(--border-extra-light); padding-top: 16px; margin-top: 16px; }
 
+        .btn-place-order { width: 100%; padding: 16px; background: var(--success-green); color: white; border: none; border-radius: var(--radius-sm); font-size: 16px; font-weight: 700; cursor: pointer; transition: background 0.2s; margin-top: 20px; }
+        .btn-place-order:hover { background: #15803d; }
+
+        footer { background: var(--dark-slate); color: var(--text-muted); padding: 24px 0; text-align: center; font-size: 14px; margin-top: auto; }
     </style>
 </head>
 <body>
 
+    <div id="notificationConsole"></div>
+
     <nav>
-        <a href="index.html" class="logo">Aadi Store | Secure Checkout</a>
+        <a href="index.html" class="logo">Aadi Store</a>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="products.html">Products</a></li>
+            <li><a href="cart.html">Cart</a></li>
+            <li><a href="orders.html">My Orders</a></li>
+            <li id="authLink"><a href="login.html">Login</a></li>
+        </ul>
     </nav>
 
     <main>
-        <h1>Complete Your Order</h1>
-        <div class="checkout-card">
-            <form id="checkoutForm">
-                <div class="form-group">
-                    <label>Full Name</label>
-                    <input type="text" id="shipName" required>
+        <h1 class="page-title">Complete Your Order</h1>
+
+        <div class="checkout-grid">
+            <!-- Shipping Information Form -->
+            <div>
+                <div class="card">
+                    <h2>Shipping Address</h2>
+                    <form id="checkoutForm">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="shippingName" required placeholder="Enter full name">
+                        </div>
+                        <div class="form-group">
+                            <label>Shipping Address</label>
+                            <textarea id="shippingAddress" rows="3" required placeholder="Flat No, Building, Street, Area"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="tel" id="shippingPhone" required placeholder="10-digit mobile number">
+                        </div>
+                    </form>
                 </div>
-                <div class="form-group">
-                    <label>Shipping Address</label>
-                    <input type="text" id="shipAddress" required placeholder="123 Main St, Apartment 4B">
+
+                <div class="card">
+                    <h2>Payment Options</h2>
+                    <p style="color: var(--text-muted); font-size: 14px;">💵 Cash on Delivery (COD) selected by default.</p>
                 </div>
-                <div class="row">
-                    <div class="form-group">
-                        <label>City</label>
-                        <input type="text" required>
+            </div>
+
+            <!-- Summary Deck -->
+            <div>
+                <div class="card">
+                    <h2>Order Summary</h2>
+                    <div id="orderItemsContainer">Loading items...</div>
+                    <div class="summary-row" style="margin-top: 20px;">
+                        <span>Subtotal</span>
+                        <span id="subtotalVal">₹0</span>
                     </div>
-                    <div class="form-group">
-                        <label>Postal Code</label>
-                        <input type="text" required>
+                    <div class="summary-row">
+                        <span>Shipping</span>
+                        <span style="color: var(--success-green); font-weight: 600;">Free</span>
                     </div>
+                    <div class="summary-row total">
+                        <span>Total Payable</span>
+                        <span id="totalVal">₹0</span>
+                    </div>
+                    <button class="btn-place-order" onclick="placeOrder()">Confirm & Place Order →</button>
                 </div>
-                
-                <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 25px 0;">
-                
-                <h3 style="margin-bottom: 15px; color: var(--text-dark);">Payment Information</h3>
-                <div class="form-group">
-                    <label>Card Number (Mock Data)</label>
-                    <input type="text" placeholder="1111-2222-3333-4444" required maxlength="19">
-                </div>
-                
-                <button type="submit" class="pay-btn" id="payBtn">Place Order</button>
-            </form>
+            </div>
         </div>
     </main>
 
-    <!-- Success Popup -->
-    <div class="success-modal" id="successModal">
-        <div class="modal-content">
-            <h2>🎉 Order Confirmed!</h2>
-            <p>Your payment was successful and your order is being processed.</p>
-            <a href="index.html" class="modal-btn">Return to Store</a>
-        </div>
-    </div>
+    <footer>
+        &copy; 2026 Aadi Store. All rights reserved.
+    </footer>
 
     <script>
-        // Updated to use the live cloud backend API endpoint
-        const API_ORDERS_URL = 'https://aadi-ecommerce-services-1.onrender.com/api/orders';
+        const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:8080'
+            : 'https://aadi-ecommerce-services-1.onrender.com';
 
-        document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
+        let cartItemsList = [];
+        let totalAmount = 0;
+
+        function showNotification(msg, type = 'success') {
+            const consoleBox = document.getElementById('notificationConsole');
+            const toast = document.createElement('div');
+            toast.className = `toast-banner ${type}`;
+            toast.textContent = msg;
+            consoleBox.appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
             const sessionData = localStorage.getItem('sessionUser');
             if (!sessionData) {
-                alert("Session expired. Please log in again.");
+                alert("Please login to proceed to checkout.");
                 window.location.href = 'login.html';
                 return;
             }
 
             const currentUser = JSON.parse(sessionData);
-            const btn = document.getElementById('payBtn');
-            btn.disabled = true;
-            btn.innerText = "Processing Payment...";
+            document.getElementById('shippingName').value = currentUser.name || '';
+
+            await loadCheckoutItems(currentUser.id);
+        });
+
+        async function loadCheckoutItems(userId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/cart/user/${userId}`);
+                if (!response.ok) throw new Error("Failed to load cart");
+
+                cartItemsList = await response.json();
+                const container = document.getElementById('orderItemsContainer');
+                container.innerHTML = '';
+                totalAmount = 0;
+
+                if (!Array.isArray(cartItemsList) || cartItemsList.length === 0) {
+                    container.innerHTML = '<p style="color: var(--text-muted);">Your cart is empty.</p>';
+                    return;
+                }
+
+                cartItemsList.forEach(item => {
+                    const product = item.product || item;
+                    const qty = item.quantity || 1;
+                    const price = product.price || 0;
+                    totalAmount += price * qty;
+
+                    const row = document.createElement('div');
+                    row.className = 'order-item';
+                    row.innerHTML = `
+                        <div>
+                            <strong>${product.name}</strong><br>
+                            <small style="color: var(--text-muted);">Qty: ${qty}</small>
+                        </div>
+                        <div>₹${(price * qty).toLocaleString('en-IN')}</div>
+                    `;
+                    container.appendChild(row);
+                });
+
+                document.getElementById('subtotalVal').textContent = `₹${totalAmount.toLocaleString('en-IN')}`;
+                document.getElementById('totalVal').textContent = `₹${totalAmount.toLocaleString('en-IN')}`;
+
+            } catch (err) {
+                console.error("Error loading checkout:", err);
+                showNotification("Unable to load cart items.", "danger");
+            }
+        }
+
+        async function placeOrder() {
+            const sessionData = localStorage.getItem('sessionUser');
+            if (!sessionData) return;
+
+            const currentUser = JSON.parse(sessionData);
+            const address = document.getElementById('shippingAddress').value.trim();
+            const phone = document.getElementById('shippingPhone').value.trim();
+
+            if (!address || !phone) {
+                showNotification("Please fill in your shipping address and phone number.", "danger");
+                return;
+            }
+
+            if (cartItemsList.length === 0) {
+                showNotification("Cannot place order with an empty cart.", "danger");
+                return;
+            }
 
             try {
-                // Send OrderRequest matching your DTO
-                const response = await fetch(API_ORDERS_URL, {
+                const response = await fetch(`${API_BASE_URL}/api/orders/place`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId: currentUser.id })
+                    body: JSON.stringify({
+                        userId: currentUser.id,
+                        shippingAddress: address,
+                        phoneNumber: phone,
+                        totalAmount: totalAmount
+                    })
                 });
 
                 if (response.ok) {
-                    // Show success popup
-                    document.getElementById('successModal').style.display = 'flex';
+                    showNotification("🎉 Order placed successfully!", "success");
+                    setTimeout(() => {
+                        window.location.href = 'orders.html';
+                    }, 1500);
                 } else {
-                    const errorMsg = await response.text();
-                    throw new Error(errorMsg);
+                    showNotification("Failed to place order. Try again.", "danger");
                 }
-            } catch (error) {
-                alert("Checkout Failed: " + error.message);
-                btn.disabled = false;
-                btn.innerText = "Place Order";
+            } catch (err) {
+                console.error("Order error:", err);
+                showNotification("Network error submitting order.", "danger");
             }
-        });
+        }
     </script>
 </body>
 </html>

@@ -8,78 +8,100 @@
         :root {
             --primary-blue: #1e3a8a;
             --accent-blue: #2563eb;
-            --success-green: #16a34a;
-            --danger-red: #ef4444;
-            --text-dark: #0f172a;
+            --sky-blue: #38bdf8;
+            --dark-slate: #0f172a;
+            --muted-slate: #334155;
+            --gray-cool: #f5f7fb;
+            --border-light: #cbd5e1;
+            --border-extra-light: #e2e8f0;
             --text-muted: #64748b;
-            --gray-bg: #f8fafc;
-            --card-bg: #ffffff;
-            --border-light: #e2e8f0;
+            --success-green: #16a34a;
+            --warning-amber: #d97706;
+            --danger-red: #ef4444;
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.02);
+            --shadow-md: 0 5px 15px rgba(0,0,0,0.05);
+            --transition-speed: 0.25s;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
-        body { background-color: var(--gray-bg); color: var(--text-dark); min-height: 100vh; display: flex; flex-direction: column; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body { background-color: var(--gray-cool); color: var(--muted-slate); min-height: 100vh; display: flex; flex-direction: column; }
+
+        /* FIXED NOTIFICATION TOAST */
+        #notificationConsole { position: fixed; top: 24px; right: 24px; z-index: 5000; display: flex; flex-direction: column; gap: 12px; max-width: 420px; width: calc(100% - 48px); }
+        .toast-banner { background: white; border-left: 4px solid var(--accent-blue); padding: 16px 20px; border-radius: var(--radius-sm); box-shadow: 0 10px 25px rgba(0,0,0,0.08); font-size: 14px; font-weight: 600; animation: slideIn 0.25s forwards; }
+        .toast-banner.danger { border-left-color: var(--danger-red); }
+        @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
 
         /* NAVBAR */
-        nav {
-            position: sticky; top: 0; z-index: 1000;
-            background: var(--primary-blue);
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0 60px; height: 80px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-        }
+        nav { position: sticky; top: 0; z-index: 2000; background: var(--primary-blue); display: flex; justify-content: space-between; align-items: center; padding: 0 60px; height: 80px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+        .logo-wrapper { display: flex; align-items: center; gap: 12px; }
         .logo { color: white; font-size: 26px; font-weight: 800; text-decoration: none; }
-        nav ul { list-style: none; display: flex; align-items: center; height: 100%; }
-        nav ul li { margin-left: 10px; }
-        nav ul li a {
-            text-decoration: none; color: rgba(255,255,255,0.8);
-            padding: 8px 16px; border-radius: 6px; font-weight: 500; transition: 0.3s;
-        }
-        nav ul li a:hover, nav ul li a.active { color: white; background: rgba(255,255,255,0.1); }
+        .logo-tag { background: rgba(255,255,255,0.15); color: var(--sky-blue); font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; }
+        nav ul { list-style: none; display: flex; align-items: center; gap: 8px; }
+        nav ul li a { text-decoration: none; color: rgba(255,255,255,0.8); padding: 8px 16px; border-radius: var(--radius-sm); font-weight: 500; font-size: 15px; transition: all var(--transition-speed); }
+        nav ul li a:hover { color: white; background: rgba(255,255,255,0.08); }
+        nav ul li a.active { background: var(--accent-blue); color: white; box-shadow: 0 4px 12px rgba(37,99,235,0.2); }
 
-        /* MAIN CONTENT */
-        main { padding: 40px 60px; max-width: 1000px; margin: 0 auto; width: 100%; flex: 1; }
-        h1 { margin-bottom: 10px; font-size: 32px; color: var(--text-dark); }
-        .subtitle { color: var(--text-muted); margin-bottom: 30px; font-size: 16px; }
+        /* MAIN CONTENT AREA */
+        main { flex: 1; width: 85%; max-width: 1100px; margin: 40px auto; }
+        .page-header { margin-bottom: 32px; text-align: center; }
+        .page-title { font-size: 32px; font-weight: 800; color: var(--dark-slate); }
+        .subtitle { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
 
-        /* ORDER CARDS */
-        .order-list { display: flex; flex-direction: column; gap: 20px; }
-        .order-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-            border: 1px solid var(--border-light);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: transform 0.2s ease;
-        }
-        .order-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        
-        .order-info h3 { font-size: 20px; color: var(--primary-blue); margin-bottom: 8px; }
-        .order-info p { color: var(--text-muted); font-size: 14px; margin-bottom: 5px; }
-        
-        .order-amount { text-align: right; }
-        .order-amount .price { font-size: 24px; font-weight: 800; color: var(--success-green); }
-        .order-amount .status { display: inline-block; margin-top: 8px; padding: 4px 12px; background: #dcfce7; color: #166534; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+        /* SHIMMER SKELETON LOADER */
+        .skeleton-stack { display: flex; flex-direction: column; gap: 20px; }
+        .skeleton-card { background: white; height: 160px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: 20px; }
+        .shimmer-block { background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%); background-size: 200% 100%; animation: shimmer 1.6s infinite linear; border-radius: var(--radius-sm); height: 100%; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-        .empty-state { text-align: center; padding: 60px 20px; background: white; border-radius: 12px; border: 1px dashed #cbd5e1; color: var(--text-muted); }
-        .empty-state a { display: inline-block; margin-top: 15px; padding: 10px 20px; background: var(--accent-blue); color: white; text-decoration: none; border-radius: 6px; font-weight: bold; }
+        /* ORDERS LIST & CARDS */
+        .orders-stack { display: flex; flex-direction: column; gap: 24px; }
+        .order-card { background: white; border-radius: var(--radius-md); border: 1px solid var(--border-extra-light); padding: 24px; box-shadow: var(--shadow-md); transition: transform 0.2s, box-shadow 0.2s; }
+        .order-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
 
-        @media (max-width: 768px) {
-            nav { padding: 0 20px; }
-            main { padding: 20px; }
-            .order-card { flex-direction: column; align-items: flex-start; gap: 15px; }
-            .order-amount { text-align: left; }
-        }
+        .order-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-extra-light); padding-bottom: 14px; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+        .order-id { font-size: 16px; font-weight: 700; color: var(--dark-slate); }
+        .order-date { font-size: 13px; color: var(--text-muted); }
+
+        .badge-status { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .badge-status.placed, .badge-status.confirmed { background: #dbeafe; color: #1e40af; }
+        .badge-status.delivered { background: #dcfce7; color: #166534; }
+        .badge-status.pending { background: #fef3c7; color: #92400e; }
+
+        .order-body { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+        .order-items-list { flex: 1; min-width: 250px; }
+        .item-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; color: var(--muted-slate); }
+
+        .order-details-meta { background: var(--gray-cool); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-extra-light); min-width: 240px; }
+        .meta-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
+        .meta-text { font-size: 13px; color: var(--dark-slate); margin-bottom: 10px; line-height: 1.4; }
+
+        .total-amount { font-size: 20px; font-weight: 800; color: var(--primary-blue); margin-top: 8px; }
+
+        /* EMPTY STATE */
+        .empty-orders { text-align: center; padding: 60px 20px; background: white; border-radius: var(--radius-md); border: 1px solid var(--border-extra-light); }
+        .empty-icon { font-size: 48px; margin-bottom: 16px; }
+        .empty-orders h3 { font-size: 20px; margin-bottom: 8px; color: var(--dark-slate); }
+        .empty-orders p { color: var(--text-muted); margin-bottom: 24px; font-size: 14px; }
+        .btn-shop { padding: 12px 24px; background: var(--accent-blue); color: white; text-decoration: none; border-radius: var(--radius-sm); font-weight: 700; display: inline-block; transition: background 0.2s; }
+        .btn-shop:hover { background: var(--primary-blue); }
+
+        footer { background: var(--dark-slate); color: var(--text-muted); padding: 24px 0; text-align: center; font-size: 14px; margin-top: auto; }
     </style>
 </head>
 <body>
 
+    <div id="notificationConsole"></div>
+
+    <!-- NAVBAR -->
     <header>
         <nav>
-            <a href="index.html" class="logo">Aadi Store</a>
+            <div class="logo-wrapper">
+                <a href="index.html" class="logo">Aadi Store</a>
+                <span class="logo-tag">Account</span>
+            </div>
             <ul>
                 <li><a href="index.html">Home</a></li>
                 <li><a href="products.html">Products</a></li>
@@ -90,83 +112,123 @@
         </nav>
     </header>
 
+    <!-- MAIN CONTAINER -->
     <main>
-        <h1>My Order History</h1>
-        <p class="subtitle">View and track your recent purchases.</p>
-        
-        <div id="ordersContainer" class="order-list">
-            <div class="empty-state">Loading your order history...</div>
+        <div class="page-header">
+            <h1 class="page-title">Order History</h1>
+            <p class="subtitle">Track and review all transactions placed under your active account</p>
+        </div>
+
+        <!-- SKELETON LOADER -->
+        <div id="loadingSkeleton" class="skeleton-stack">
+            <div class="skeleton-card"><div class="shimmer-block"></div></div>
+            <div class="skeleton-card"><div class="shimmer-block"></div></div>
+        </div>
+
+        <!-- ORDERS CONTAINER -->
+        <div id="ordersContainer" class="orders-stack" style="display: none;"></div>
+
+        <!-- EMPTY STATE -->
+        <div id="emptyOrdersView" class="empty-orders" style="display: none;">
+            <div class="empty-icon">📦</div>
+            <h3>No Orders Placed Yet</h3>
+            <p>You haven't completed any purchases with us. Explore our catalog to place your first order!</p>
+            <a href="products.html" class="btn-shop">Explore Products</a>
         </div>
     </main>
 
+    <footer>
+        &copy; 2026 Aadi Store. All rights reserved.
+    </footer>
+
+    <!-- SCRIPT PIPELINE -->
     <script>
-        // 🌟 DYNAMIC BACKEND HOST DETECTION (Localhost port 8080 vs Render Production)
-        const BACKEND_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
             ? 'http://localhost:8080'
             : 'https://aadi-ecommerce-services-1.onrender.com';
 
-        const API_ORDERS_URL = `${BACKEND_BASE}/api/orders/user`;
-        let currentUser = null;
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const sessionData = localStorage.getItem('sessionUser');
-            if (sessionData) {
-                try {
-                    currentUser = JSON.parse(sessionData);
-                    
-                    const authLink = document.getElementById('authLink');
-                    if (authLink) {
-                        const displayName = currentUser.name ? currentUser.name.split(' ')[0] : 'User';
-                        authLink.innerHTML = `<a href="#" onclick="logout()" style="background:var(--danger-red); color:white; border-radius:6px;">Logout (${displayName})</a>`;
-                    }
-                    
-                    if (!currentUser.id) {
-                        renderEmptyState("Session invalid. Please log in again.");
-                        return;
-                    }
-                    
-                    fetchUserOrders();
-                } catch (e) {
-                    localStorage.removeItem('sessionUser');
-                    renderEmptyState("Session error. Please log in again.");
-                }
-            } else {
-                renderEmptyState("You must be logged in to view your order history.");
-            }
+        const currencyFormatter = new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 0
         });
 
-        function logout() {
+        function showNotification(msg, type = 'danger') {
+            const consoleBox = document.getElementById('notificationConsole');
+            const toast = document.createElement('div');
+            toast.className = `toast-banner ${type}`;
+            toast.textContent = msg;
+            consoleBox.appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
+        }
+
+        function applySmartNavbar() {
+            const sessionData = localStorage.getItem('sessionUser');
+            const authLinkNode = document.getElementById('authLink');
+            
+            if (sessionData && authLinkNode) {
+                const activeUser = JSON.parse(sessionData);
+                const firstName = activeUser.name ? activeUser.name.split(' ')[0] : 'User';
+                authLinkNode.innerHTML = `
+                    <a href="#" onclick="executeSystemLogout(event)" style="background: #ef4444; color: white;">
+                        Logout (${firstName})
+                    </a>
+                `;
+            }
+        }
+
+        window.executeSystemLogout = function(e) {
+            e.preventDefault();
             if (confirm("Are you sure you want to log out?")) {
                 localStorage.removeItem('sessionUser');
                 window.location.href = 'login.html';
             }
-        }
+        };
 
-        function renderEmptyState(message = "You haven't placed any orders yet.") {
-            document.getElementById('ordersContainer').innerHTML = `
-                <div class="empty-state">
-                    <h3>📦 ${message}</h3>
-                    <a href="products.html">Browse Products</a>
-                </div>
-            `;
-        }
+        document.addEventListener('DOMContentLoaded', async () => {
+            applySmartNavbar();
 
-        async function fetchUserOrders() {
+            const sessionData = localStorage.getItem('sessionUser');
+            if (!sessionData) {
+                alert("Please log in to view your order history.");
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const currentUser = JSON.parse(sessionData);
+            if (!currentUser || !currentUser.id) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            await fetchUserOrders(currentUser.id);
+        });
+
+        async function fetchUserOrders(userId) {
+            const loader = document.getElementById('loadingSkeleton');
+            const container = document.getElementById('ordersContainer');
+            const emptyView = document.getElementById('emptyOrdersView');
+
             try {
-                const response = await fetch(`${API_ORDERS_URL}/${currentUser.id}`);
-                if (!response.ok) throw new Error("Failed to fetch orders from backend");
-                
-                const orders = await response.json();
-                
-                if (!orders || orders.length === 0) {
-                    renderEmptyState();
-                    return;
+                const response = await fetch(`${API_BASE_URL}/api/orders/user/${userId}`);
+                if (!response.ok) {
+                    throw new Error(`Server returned status: ${response.status}`);
                 }
 
-                renderOrders(orders);
-            } catch (error) {
-                console.error("Order history fetch error:", error);
-                renderEmptyState("Error connecting to the server. Please verify your backend server is running.");
+                const orders = await response.json();
+                loader.style.display = 'none';
+
+                if (Array.isArray(orders) && orders.length > 0) {
+                    renderOrders(orders);
+                    container.style.display = 'flex';
+                } else {
+                    emptyView.style.display = 'block';
+                }
+            } catch (err) {
+                console.error("Orders fetch error:", err);
+                loader.style.display = 'none';
+                showNotification("Unable to load orders. Please verify backend connection.");
+                emptyView.style.display = 'block';
             }
         }
 
@@ -174,29 +236,75 @@
             const container = document.getElementById('ordersContainer');
             container.innerHTML = '';
 
-            // Sort orders so newest purchases appear at the top
-            orders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
+            // Render newest orders first
+            orders.reverse().forEach(order => {
+                const card = document.createElement('div');
+                card.className = 'order-card';
 
-            orders.forEach(order => {
-                const dateObj = new Date(order.orderDate);
-                const formattedDate = dateObj.toLocaleDateString('en-IN', {
-                    year: 'numeric', month: 'long', day: 'numeric',
-                    hour: '2-digit', minute: '2-digit'
+                const status = (order.status || 'PLACED').toUpperCase();
+                const statusClass = status.toLowerCase();
+                
+                // Format order date safely
+                const rawDate = order.orderDate || order.createdAt || new Date();
+                const formattedDate = new Date(rawDate).toLocaleDateString('en-IN', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
                 });
 
-                container.innerHTML += `
-                    <div class="order-card">
-                        <div class="order-info">
-                            <h3>Order #${order.id}</h3>
-                            <p><strong>Placed on:</strong> ${formattedDate}</p>
-                            <p><strong>Payment Status:</strong> Paid via Safe Checkout</p>
+                // Calculate or read total amount
+                const orderTotal = order.totalAmount || order.totalPrice || 0;
+
+                // Build order items markup if present
+                let itemsHtml = '';
+                if (Array.isArray(order.orderItems) && order.orderItems.length > 0) {
+                    order.orderItems.forEach(item => {
+                        const productName = item.product ? item.product.name : (item.productName || 'Product Item');
+                        const qty = item.quantity || 1;
+                        const price = item.price || (item.product ? item.product.price : 0);
+
+                        itemsHtml += `
+                            <div class="item-row">
+                                <span>${productName} <strong>× ${qty}</strong></span>
+                                <span>${currencyFormatter.format(price * qty)}</span>
+                            </div>
+                        `;
+                    });
+                } else {
+                    itemsHtml = `<div class="item-row" style="color: var(--text-muted);">Standard Order Allocation Payload</div>`;
+                }
+
+                card.innerHTML = `
+                    <div class="order-header">
+                        <div>
+                            <div class="order-id">Order #${order.id || 'N/A'}</div>
+                            <div class="order-date">Placed on ${formattedDate}</div>
                         </div>
-                        <div class="order-amount">
-                            <div class="price">₹${order.totalAmount}</div>
-                            <div class="status">Confirmed</div>
+                        <span class="badge-status ${statusClass}">${status}</span>
+                    </div>
+
+                    <div class="order-body">
+                        <div class="order-items-list">
+                            <div class="meta-title">Order Items</div>
+                            ${itemsHtml}
+                        </div>
+
+                        <div class="order-details-meta">
+                            <div class="meta-title">Delivery Info</div>
+                            <div class="meta-text">
+                                ${order.shippingAddress || 'Address details on file'}<br>
+                                Phone: ${order.phoneNumber || 'N/A'}
+                            </div>
+
+                            <div class="meta-title">Payment Total</div>
+                            <div class="total-amount">${currencyFormatter.format(orderTotal)}</div>
                         </div>
                     </div>
                 `;
+
+                container.appendChild(card);
             });
         }
     </script>

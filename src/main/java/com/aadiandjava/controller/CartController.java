@@ -29,7 +29,8 @@ public class CartController {
     private CartService cartService;
 
     // 1. Fetch all cart items for a specific user ID
-    @GetMapping("/{userId}")
+    // 🌟 Mapped to both /{userId} AND /user/{userId} to resolve frontend 404 mismatch
+    @GetMapping({ "/{userId}", "/user/{userId}" })
     public ResponseEntity<?> getCartByUser(@PathVariable Long userId) {
         try {
             List<CartResponse> cartItems = cartService.getCartByUser(userId);
