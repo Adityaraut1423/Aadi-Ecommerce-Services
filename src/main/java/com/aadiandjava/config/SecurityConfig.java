@@ -29,7 +29,10 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
 
-                        // Public URLs
+                        // 1. Specific Admin restriction MUST come first!
+                        .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
+
+                        // 2. Broad Public URLs second
                         .requestMatchers(
                                 "/",
                                 "/health",
@@ -39,14 +42,9 @@ public class SecurityConfig {
                                 "/v3/api-docs/**"
                         ).permitAll()
 
-                        // Admin URLs
-                        .requestMatchers("/api/admin/**")
-                        .hasAuthority("ADMIN")
-
-                        // All other URLs require authentication
-                        .anyRequest()
-                        .authenticated())
-
+                        // 3. Fallback for any other endpoint
+                        .anyRequest().authenticated()
+                )
                 .httpBasic(Customizer.withDefaults());
 
         return http.build();
