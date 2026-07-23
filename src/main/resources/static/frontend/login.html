@@ -61,7 +61,6 @@
             : 'https://aadi-ecommerce-services-1.onrender.com';
 
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
-            // 🌟 CRITICAL FIX: Stops browser from sending an automatic GET page refresh
             e.preventDefault();
 
             const emailInput = document.getElementById('loginEmail').value.trim();
@@ -74,8 +73,8 @@
             submitBtn.disabled = true;
 
             try {
-                // 🌟 Explicit POST fetch request to Spring Boot backend
-                const response = await fetch(`${BACKEND_BASE}/api/users/login`, {
+                // 🌟 UPDATED FIX: Changed endpoint to /api/auth/login
+                const response = await fetch(`${BACKEND_BASE}/api/auth/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -95,8 +94,13 @@
                 // Store active profile session context locally
                 localStorage.setItem('sessionUser', JSON.stringify(userData));
 
-                // Redirect user to the products catalog page
-                window.location.href = 'products.html';
+                // If user is Admin, redirect to admin console, otherwise go to products catalog
+                const userRole = (userData.role || '').toUpperCase();
+                if (userRole.includes('ADMIN')) {
+                    window.location.href = 'admin.html';
+                } else {
+                    window.location.href = 'products.html';
+                }
 
             } catch (err) {
                 console.error("Login anomaly caught:", err);
