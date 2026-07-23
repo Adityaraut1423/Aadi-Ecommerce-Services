@@ -1,18 +1,18 @@
 package com.aadiandjava.repository;
 
 import java.util.List;
-
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
-
-import com.aadiandjava.entity.Cart; // 👈 Import from your entity package
+import org.springframework.transaction.annotation.Transactional;
+import com.aadiandjava.entity.Cart;
 
 @Repository
 public interface CartRepository extends JpaRepository<Cart, Long> {
 
-    // Navigates user.id inside your Cart entity
     List<Cart> findByUserId(Long userId);
 
-    // Deletes cart entries for a specific user ID
+    @Modifying
+    @Transactional
     void deleteByUserId(Long userId);
 }

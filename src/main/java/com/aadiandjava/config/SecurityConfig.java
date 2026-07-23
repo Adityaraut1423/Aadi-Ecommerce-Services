@@ -1,7 +1,10 @@
 package com.aadiandjava.config;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -10,50 +13,73 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
-
 @Configuration
 public class SecurityConfig {
 
-    // 1. Fixes the "No qualifying bean of type PasswordEncoder" error in UserService
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // 2. Configures Security Rules and endpoints
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/**").permitAll()
-                .anyRequest().authenticated()
-            );
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+
+                        // Public URLs
+                        .requestMatchers(
+                                "/",
+                                "/health",
+                                "/api/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**"
+                        ).permitAll()
+
+                        // Admin URLs
+                        .requestMatchers("/api/admin/**")
+                        .hasAuthority("ADMIN")
+
+                        // All other URLs require authentication
+                        .anyRequest()
+                        .authenticated())
+
+                .httpBasic(Customizer.withDefaults());
 
         return http.build();
     }
 
-    // 3. Configures CORS so Firebase frontend can call your Render backend endpoints
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(List.of(
-            "https://aadi-ecommerce-store-a3a0f.web.app",
-            "https://aadi-ecommerce-store-a3a0f.firebaseapp.com",
-            "http://localhost:3000",
-            "http://localhost:8080",
-            "http://localhost:5500"
-        ));
+                "https://aadi-ecommerce-store-a3a0f.web.app",
+                "https://aadi-ecommerce-store-a3a0f.firebaseapp.com",
+                "http://localhost:3000",
+                "http://localhost:8080",
+                "http://localhost:5500",
+                "http://127.0.0.1:5500"));
 
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of(
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE",
+                "OPTIONS"));
+
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
         source.registerCorsConfiguration("/**", configuration);
+
         return source;
     }
 }

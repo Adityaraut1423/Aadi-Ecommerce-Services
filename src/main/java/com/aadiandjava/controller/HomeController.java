@@ -8,6 +8,11 @@ public class HomeController {
 
     @GetMapping("/")
     public String home() {
-        return "Aadi Store E-Commerce API is live and operational!";
+        return "Aadi Ecommerce API Running Successfully 🚀";
+    }
+
+    @GetMapping("/health")
+    public String health() {
+        return "OK";
     }
 }

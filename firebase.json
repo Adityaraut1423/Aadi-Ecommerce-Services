@@ -1,10 +1,12 @@
 {
   "hosting": {
-    "public": "src/main/resources/static/frontend",
+    "public": ".",
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**"
+      "**/node_modules/**",
+      "target/**",
+      "Dockerfile"
     ]
   }
 }
